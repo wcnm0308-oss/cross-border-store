@@ -13,9 +13,15 @@ type CartItem = {
 type InquiryRequestBody = {
   name?: string;
   email?: string;
+  companyName?: string;
+  company_name?: string;
+  phone?: string;
+  whatsapp?: string;
   interestedProduct?: string;
   message?: string;
+  requirements?: string;
   country?: string;
+  quantity?: string;
   sourcePage?: string;
   cartItems?: CartItem[];
   cartTotal?: number;
@@ -49,12 +55,18 @@ function escapeHtml(value: string) {
 async function sendInquiryNotification(params: {
   name: string;
   email: string;
+  companyName: string | null;
+  phone: string | null;
+  whatsapp: string | null;
   interestedProduct: string | null;
   message: string | null;
+  requirements: string | null;
   country: string | null;
+  quantity: string | null;
   sourcePage: string;
   cartItems: CartItem[];
   cartTotal: number;
+  inquiryId?: string;
   createdAt?: string;
 }) {
   const resendApiKey = process.env.RESEND_API_KEY;
@@ -71,14 +83,32 @@ async function sendInquiryNotification(params: {
 
   const safeName = escapeHtml(params.name);
   const safeEmail = escapeHtml(params.email);
+  const safeCompanyName = escapeHtml(params.companyName || "Not specified");
+  const safePhone = escapeHtml(params.phone || "Not specified");
+  const safeWhatsapp = escapeHtml(params.whatsapp || "Not specified");
   const safeInterestedProduct = escapeHtml(
     params.interestedProduct || "Not specified"
   );
   const safeCountry = escapeHtml(params.country || "Not specified");
+  const safeQuantity = escapeHtml(params.quantity || "Not specified");
+  const safeRequirements = escapeHtml(
+    params.requirements || "No requirements submitted."
+  );
   const safeMessage = escapeHtml(params.message || "No message submitted.");
   const safeSourcePage = escapeHtml(params.sourcePage);
   const safeCartText = escapeHtml(cartText);
   const safeCreatedAt = escapeHtml(params.createdAt || new Date().toISOString());
+  const detailPath = params.inquiryId
+    ? `/admin/inquiries/${encodeURIComponent(params.inquiryId)}`
+    : "/admin/inquiries";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+    ? process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "")
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`
+      : "";
+  const safeAdminDetailLink = escapeHtml(
+    siteUrl ? `${siteUrl}${detailPath}` : detailPath
+  );
 
   await resend.emails.send({
     from: "Cross Border Store <onboarding@resend.dev>",
@@ -93,10 +123,16 @@ async function sendInquiryNotification(params: {
         <h3>Customer Info</h3>
         <p><strong>Name:</strong> ${safeName}</p>
         <p><strong>Email:</strong> ${safeEmail}</p>
-        <p><strong>Country / Region:</strong> ${safeCountry}</p>
+        <p><strong>Company:</strong> ${safeCompanyName}</p>
+        <p><strong>Phone:</strong> ${safePhone}</p>
+        <p><strong>WhatsApp:</strong> ${safeWhatsapp}</p>
+        <p><strong>Destination Country:</strong> ${safeCountry}</p>
 
         <h3>Inquiry Details</h3>
         <p><strong>Interested Product:</strong> ${safeInterestedProduct}</p>
+        <p><strong>Estimated Quantity:</strong> ${safeQuantity}</p>
+        <p><strong>Requirements:</strong></p>
+        <p style="white-space: pre-line;">${safeRequirements}</p>
         <p><strong>Message:</strong></p>
         <p style="white-space: pre-line;">${safeMessage}</p>
 
@@ -108,6 +144,7 @@ async function sendInquiryNotification(params: {
 
         <h3>Source</h3>
         <p><strong>Source Page:</strong> ${safeSourcePage}</p>
+        <p><strong>Admin Detail:</strong> ${safeAdminDetailLink}</p>
         <p><strong>Submitted At:</strong> ${safeCreatedAt}</p>
       </div>
     `,
@@ -133,9 +170,15 @@ export async function POST(request: NextRequest) {
 
     const name = body.name?.trim();
     const email = body.email?.trim();
+    const companyName =
+      body.companyName?.trim() || body.company_name?.trim() || null;
+    const phone = body.phone?.trim() || null;
+    const whatsapp = body.whatsapp?.trim() || null;
     const interestedProduct = body.interestedProduct?.trim() || null;
     const message = body.message?.trim() || null;
+    const requirements = body.requirements?.trim() || null;
     const country = body.country?.trim() || null;
+    const quantity = body.quantity?.trim() || null;
     const sourcePage = body.sourcePage?.trim() || "/contact";
     const cartItems = Array.isArray(body.cartItems) ? body.cartItems : [];
     const cartTotal =
@@ -154,25 +197,62 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+    const baseInquiryPayload = {
+      name,
+      email,
+      interested_product: interestedProduct,
+      message,
+      country,
+      source_page: sourcePage,
+      cart_items: cartItems,
+      cart_total: cartTotal,
+      status: "new",
+    };
+    const extendedInquiryPayload = {
+      ...baseInquiryPayload,
+      company_name: companyName,
+      phone,
+      whatsapp,
+      quantity,
+      requirements,
+    };
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("inquiries")
-      .insert({
-        name,
-        email,
-        interested_product: interestedProduct,
-        message,
-        country,
-        source_page: sourcePage,
-        cart_items: cartItems,
-        cart_total: cartTotal,
-        status: "new",
-      })
+      .insert(extendedInquiryPayload)
       .select("id, created_at")
       .single();
 
     if (error) {
+      console.warn(
+        "Extended inquiry insert failed; retrying with base fields:",
+        error
+      );
+
+      const fallbackResult = await supabase
+        .from("inquiries")
+        .insert(baseInquiryPayload)
+        .select("id, created_at")
+        .single();
+
+      data = fallbackResult.data;
+      error = fallbackResult.error;
+    }
+
+    if (error) {
       console.error("Failed to create inquiry:", error);
+
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Failed to submit inquiry.",
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!data) {
+      console.error("Failed to create inquiry: no record returned.");
 
       return NextResponse.json(
         {
@@ -187,12 +267,18 @@ export async function POST(request: NextRequest) {
       await sendInquiryNotification({
         name,
         email,
+        companyName,
+        phone,
+        whatsapp,
         interestedProduct,
         message,
+        requirements,
         country,
+        quantity,
         sourcePage,
         cartItems,
         cartTotal,
+        inquiryId: data.id,
         createdAt: data.created_at,
       });
     } catch (emailError) {

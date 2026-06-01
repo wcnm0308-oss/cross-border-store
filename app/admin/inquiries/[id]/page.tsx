@@ -1,6 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { createClient } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { getAdminPassword, isAdminAuthorized } from "@/lib/admin-auth";
 import {
   getInquiryStatusBadgeClass,
   getInquiryStatusLabel,
@@ -9,6 +12,13 @@ import {
 export const dynamic = "force-dynamic";
 
 type InquiryRecord = Record<string, unknown>;
+
+type InternalNote = {
+  id: string;
+  note: string | null;
+  created_at: string | null;
+  created_by: string | null;
+};
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -209,6 +219,13 @@ function UnauthorizedAdmin() {
             杩涘叆鍚庡彴
           </button>
         </form>
+
+        <Link
+          href="/admin/login"
+          className="mt-4 inline-flex w-full justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+        >
+          Go to Admin Login
+        </Link>
       </div>
     </main>
   );
@@ -271,12 +288,11 @@ function buildBackHref(params: {
   status?: string;
   dateRange?: string;
 }) {
-  if (!params.key) {
-    return "/admin/inquiries";
-  }
-
   const searchParams = new URLSearchParams();
-  searchParams.set("key", params.key);
+
+  if (params.key) {
+    searchParams.set("key", params.key);
+  }
 
   if (params.q) {
     searchParams.set("q", params.q);
@@ -290,7 +306,97 @@ function buildBackHref(params: {
     searchParams.set("dateRange", params.dateRange);
   }
 
-  return `/admin/inquiries?${searchParams.toString()}`;
+  const queryString = searchParams.toString();
+
+  return queryString ? `/admin/inquiries?${queryString}` : "/admin/inquiries";
+}
+
+function buildDetailHref(
+  id: string,
+  params: {
+    key: string;
+    q?: string;
+    status?: string;
+    dateRange?: string;
+    notesError?: string;
+  },
+) {
+  const searchParams = new URLSearchParams();
+
+  if (params.key) {
+    searchParams.set("key", params.key);
+  }
+
+  if (params.q) {
+    searchParams.set("q", params.q);
+  }
+
+  if (params.status) {
+    searchParams.set("status", params.status);
+  }
+
+  if (params.dateRange && params.dateRange !== "all") {
+    searchParams.set("dateRange", params.dateRange);
+  }
+
+  if (params.notesError) {
+    searchParams.set("notesError", params.notesError);
+  }
+
+  const queryString = searchParams.toString();
+
+  return queryString
+    ? `/admin/inquiries/${encodeURIComponent(id)}?${queryString}`
+    : `/admin/inquiries/${encodeURIComponent(id)}`;
+}
+
+async function addInternalNote(formData: FormData) {
+  "use server";
+
+  const inputKey = String(formData.get("adminKey") || "");
+  const inquiryId = String(formData.get("inquiryId") || "");
+  const note = String(formData.get("note") || "").trim();
+  const q = String(formData.get("q") || "").trim();
+  const status = String(formData.get("statusFilter") || "");
+  const dateRange = String(formData.get("dateRange") || "all");
+  const redirectHref = inquiryId
+    ? buildDetailHref(inquiryId, {
+        key: inputKey,
+        q,
+        status,
+        dateRange,
+      })
+    : buildBackHref({ key: inputKey, q, status, dateRange });
+
+  if (!(await isAdminAuthorized(inputKey))) {
+    redirect("/admin/inquiries");
+  }
+
+  if (!inquiryId || !note) {
+    redirect(redirectHref);
+  }
+
+  const supabase = getSupabaseAdminClient();
+  const { error } = await supabase.from("inquiry_notes").insert({
+    inquiry_id: inquiryId,
+    note,
+    created_by: "admin",
+  });
+
+  if (error) {
+    redirect(
+      buildDetailHref(inquiryId, {
+        key: inputKey,
+        q,
+        status,
+        dateRange,
+        notesError: "unavailable",
+      }),
+    );
+  }
+
+  revalidatePath(`/admin/inquiries/${inquiryId}`);
+  redirect(redirectHref);
 }
 
 export default async function InquiryDetailPage({
@@ -308,11 +414,15 @@ export default async function InquiryDetailPage({
     status: getSearchParam(resolvedSearchParams, "status"),
     dateRange: getSearchParam(resolvedSearchParams, "dateRange"),
   });
+  const q = getSearchParam(resolvedSearchParams, "q");
+  const statusFilter = getSearchParam(resolvedSearchParams, "status");
+  const dateRange = getSearchParam(resolvedSearchParams, "dateRange");
+  const notesError = getSearchParam(resolvedSearchParams, "notesError");
 
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminPassword = getAdminPassword();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const isUnlocked = Boolean(adminPassword) && inputKey === adminPassword;
+  const isUnlocked = await isAdminAuthorized(inputKey);
 
   if (!adminPassword) {
     return <AdminPasswordMissing />;
@@ -364,16 +474,29 @@ export default async function InquiryDetailPage({
     "interested_product",
   ]);
   const message = getFirstValue(inquiry, ["message", "requirements", "note"]);
+  const { data: notesData, error: notesQueryError } = await supabase
+    .from("inquiry_notes")
+    .select("id,note,created_at,created_by")
+    .eq("inquiry_id", id)
+    .order("created_at", { ascending: false });
+  const internalNotes = (notesData ?? []) as InternalNote[];
+  const notesUnavailable = Boolean(notesQueryError);
 
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-10">
       <div className="mx-auto max-w-5xl">
-        <div className="mb-6">
+        <div className="mb-6 flex flex-wrap gap-3">
           <Link
             href={backHref}
             className="inline-flex rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100"
           >
             Back to Inquiries
+          </Link>
+          <Link
+            href="/admin/logout"
+            className="inline-flex rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100"
+          >
+            Log Out
           </Link>
         </div>
 
@@ -405,6 +528,7 @@ export default async function InquiryDetailPage({
               <InfoRow label="Company" value={getFirstValue(inquiry, ["company", "company_name"])} />
               <InfoRow label="Phone / WhatsApp" value={getFirstValue(inquiry, ["phone", "whatsapp", "WhatsApp"])} />
               <InfoRow label="Country" value={getFirstValue(inquiry, ["country", "destination_country"])} />
+              <InfoRow label="Estimated Quantity" value={getFirstValue(inquiry, ["quantity", "estimated_quantity"])} />
             </dl>
           </InfoCard>
 
@@ -414,6 +538,79 @@ export default async function InquiryDetailPage({
 
           <InfoCard title="Message / Requirements">
             {renderStructuredValue(message)}
+          </InfoCard>
+
+          <InfoCard title="Internal Notes">
+            {notesUnavailable ? (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+                Internal notes are not available until the database migration is
+                applied.
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {notesError === "unavailable" ? (
+                  <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                    The note could not be saved. Please confirm the database
+                    migration has been applied.
+                  </div>
+                ) : null}
+
+                {internalNotes.length > 0 ? (
+                  <div className="space-y-3">
+                    {internalNotes.map((note) => (
+                      <div
+                        key={note.id}
+                        className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                      >
+                        <p className="whitespace-pre-wrap text-sm leading-6 text-slate-800">
+                          {note.note || "-"}
+                        </p>
+                        <p className="mt-3 text-xs text-slate-500">
+                          {formatDate(note.created_at)} by{" "}
+                          {note.created_by || "admin"}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">
+                    No internal notes yet.
+                  </p>
+                )}
+
+                <form action={addInternalNote} className="space-y-3">
+                  <input type="hidden" name="adminKey" value={inputKey} />
+                  <input type="hidden" name="inquiryId" value={id} />
+                  <input type="hidden" name="q" value={q} />
+                  <input
+                    type="hidden"
+                    name="statusFilter"
+                    value={statusFilter}
+                  />
+                  <input type="hidden" name="dateRange" value={dateRange} />
+
+                  <label className="grid gap-2">
+                    <span className="text-sm font-medium text-slate-700">
+                      Add Note
+                    </span>
+                    <textarea
+                      name="note"
+                      required
+                      rows={4}
+                      className="resize-none rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-900"
+                      placeholder="Add an internal follow-up note..."
+                    />
+                  </label>
+
+                  <button
+                    type="submit"
+                    className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+                  >
+                    Save Note
+                  </button>
+                </form>
+              </div>
+            )}
           </InfoCard>
 
           <InfoCard title="Status & Timeline">

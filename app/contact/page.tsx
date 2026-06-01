@@ -76,8 +76,13 @@ export default function ContactPage() {
     const payload = {
       name: String(formData.get("name") || "").trim(),
       email: String(formData.get("email") || "").trim(),
+      companyName: String(formData.get("companyName") || "").trim(),
+      phone: String(formData.get("phone") || "").trim(),
+      whatsapp: String(formData.get("whatsapp") || "").trim(),
       interestedProduct: String(formData.get("interestedProduct") || "").trim(),
       country: String(formData.get("country") || "").trim(),
+      quantity: String(formData.get("quantity") || "").trim(),
+      requirements: String(formData.get("requirements") || "").trim(),
       message: String(formData.get("message") || "").trim(),
       sourcePage: window.location.pathname,
       cartItems,
@@ -166,7 +171,41 @@ export default function ContactPage() {
               </label>
 
               <label className="grid gap-2">
-                <span className="text-sm font-semibold">Country / Region</span>
+                <span className="text-sm font-semibold">Company Name</span>
+                <input
+                  name="companyName"
+                  type="text"
+                  placeholder="Company or organization"
+                  className="rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"
+                />
+              </label>
+
+              <div className="grid gap-5 md:grid-cols-2">
+                <label className="grid gap-2">
+                  <span className="text-sm font-semibold">Phone</span>
+                  <input
+                    name="phone"
+                    type="text"
+                    placeholder="+1 555 000 0000"
+                    className="rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"
+                  />
+                </label>
+
+                <label className="grid gap-2">
+                  <span className="text-sm font-semibold">WhatsApp</span>
+                  <input
+                    name="whatsapp"
+                    type="text"
+                    placeholder="+1 555 000 0000"
+                    className="rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"
+                  />
+                </label>
+              </div>
+
+              <label className="grid gap-2">
+                <span className="text-sm font-semibold">
+                  Destination Country
+                </span>
                 <input
                   name="country"
                   type="text"
@@ -182,9 +221,30 @@ export default function ContactPage() {
                 <input
                   name="interestedProduct"
                   type="text"
-                  required
                   placeholder="Product name or product category"
                   className="rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"
+                />
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-sm font-semibold">
+                  Estimated Quantity
+                </span>
+                <input
+                  name="quantity"
+                  type="text"
+                  placeholder="Example: 500 pcs, 20 cartons, trial order"
+                  className="rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"
+                />
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-sm font-semibold">Requirements</span>
+                <textarea
+                  name="requirements"
+                  placeholder="Packaging, private label, shipping terms, target price, or lead time requirements."
+                  rows={4}
+                  className="resize-none rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"
                 />
               </label>
 
@@ -192,7 +252,6 @@ export default function ContactPage() {
                 <span className="text-sm font-semibold">Message</span>
                 <textarea
                   name="message"
-                  required
                   placeholder="Tell us your target quantity, destination country, shipping questions, packaging needs, or wholesale request."
                   rows={5}
                   className="resize-none rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getAdminPassword, isAdminAuthorized } from "@/lib/admin-auth";
 import {
   INQUIRY_STATUS_OPTIONS,
   getInquiryStatusBadgeClass,
@@ -201,7 +202,10 @@ function buildAdminInquiriesHref(params: {
   statusError?: string;
 }) {
   const searchParams = new URLSearchParams();
-  searchParams.set("key", params.key);
+
+  if (params.key) {
+    searchParams.set("key", params.key);
+  }
 
   if (params.q) {
     searchParams.set("q", params.q);
@@ -219,7 +223,9 @@ function buildAdminInquiriesHref(params: {
     searchParams.set("statusError", params.statusError);
   }
 
-  return `/admin/inquiries?${searchParams.toString()}`;
+  const queryString = searchParams.toString();
+
+  return queryString ? `/admin/inquiries?${queryString}` : "/admin/inquiries";
 }
 
 function buildAdminInquiryDetailHref(
@@ -232,7 +238,10 @@ function buildAdminInquiryDetailHref(
   },
 ) {
   const searchParams = new URLSearchParams();
-  searchParams.set("key", params.key);
+
+  if (params.key) {
+    searchParams.set("key", params.key);
+  }
 
   if (params.q) {
     searchParams.set("q", params.q);
@@ -246,13 +255,16 @@ function buildAdminInquiryDetailHref(
     searchParams.set("dateRange", params.dateRange);
   }
 
-  return `/admin/inquiries/${encodeURIComponent(id)}?${searchParams.toString()}`;
+  const queryString = searchParams.toString();
+
+  return queryString
+    ? `/admin/inquiries/${encodeURIComponent(id)}?${queryString}`
+    : `/admin/inquiries/${encodeURIComponent(id)}`;
 }
 
 async function updateInquiryStatus(formData: FormData) {
   "use server";
 
-  const adminPassword = process.env.ADMIN_PASSWORD;
   const inputKey = String(formData.get("adminKey") || "");
   const inquiryId = String(formData.get("inquiryId") || "");
   const nextStatus = String(formData.get("status") || "new");
@@ -266,7 +278,7 @@ async function updateInquiryStatus(formData: FormData) {
     dateRange: isDateRange(dateRangeFilter) ? dateRangeFilter : "all",
   });
 
-  if (!adminPassword || inputKey !== adminPassword) {
+  if (!(await isAdminAuthorized(inputKey))) {
     redirect("/admin/inquiries");
   }
 
@@ -308,11 +320,11 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
   const hasActiveFilters = Boolean(q || selectedStatus || dateRange !== "all");
   const clearFiltersHref = buildAdminInquiriesHref({ key: inputKey });
 
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminPassword = getAdminPassword();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  const isUnlocked = Boolean(adminPassword) && inputKey === adminPassword;
+  const isUnlocked = await isAdminAuthorized(inputKey);
 
   if (!adminPassword) {
     return (
@@ -366,6 +378,13 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
               进入后台
             </button>
           </form>
+
+          <Link
+            href="/admin/login"
+            className="mt-4 inline-flex w-full justify-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            Go to Admin Login
+          </Link>
         </div>
       </main>
     );
@@ -395,6 +414,17 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
     .limit(100);
 
   const allInquiries = (data ?? []) as Inquiry[];
+  const statusCounts = INQUIRY_STATUS_OPTIONS.map((status) => ({
+    ...status,
+    count: allInquiries.filter((inquiry) => inquiry.status === status.value)
+      .length,
+    href: buildAdminInquiriesHref({
+      key: inputKey,
+      q,
+      status: status.value,
+      dateRange,
+    }),
+  }));
   const inquiries = allInquiries.filter((inquiry) => {
     return (
       matchesKeyword(inquiry, q) &&
@@ -417,10 +447,43 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
             </p>
           </div>
 
-          <div className="rounded-full bg-white px-4 py-2 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200">
-            Showing {inquiries.length} inquiries
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="rounded-full bg-white px-4 py-2 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200">
+              Showing {inquiries.length} inquiries
+            </div>
+            <Link
+              href="/admin/logout"
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100"
+            >
+              Log Out
+            </Link>
           </div>
         </div>
+
+        <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
+          {statusCounts.map((status) => {
+            const isSelected = selectedStatus === status.value;
+
+            return (
+              <Link
+                key={status.value}
+                href={status.href}
+                className={`rounded-2xl border bg-white p-4 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 ${
+                  isSelected
+                    ? "border-slate-900 ring-2 ring-slate-900/10"
+                    : "border-slate-200"
+                }`}
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  {status.label}
+                </p>
+                <p className="mt-3 text-3xl font-semibold text-slate-900">
+                  {status.count}
+                </p>
+              </Link>
+            );
+          })}
+        </section>
 
         <form
           method="get"
