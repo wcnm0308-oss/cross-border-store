@@ -2,6 +2,13 @@ import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import {
+  INQUIRY_STATUS_OPTIONS,
+  getInquiryStatusBadgeClass,
+  getInquiryStatusLabel,
+  getInquiryStatusSelectValue,
+  isInquiryStatus,
+} from "@/lib/inquiry-status";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +28,6 @@ type Inquiry = {
 type PageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
-
-const STATUS_OPTIONS = ["new", "contacted", "quoted", "closed", "spam"];
 
 function getSupabaseAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -77,8 +82,12 @@ async function updateInquiryStatus(formData: FormData) {
     redirect("/admin/inquiries");
   }
 
-  if (!inquiryId || !STATUS_OPTIONS.includes(nextStatus)) {
-    redirect(`/admin/inquiries?key=${encodeURIComponent(inputKey)}`);
+  if (!inquiryId || !isInquiryStatus(nextStatus)) {
+    redirect(
+      `/admin/inquiries?key=${encodeURIComponent(
+        inputKey,
+      )}&statusError=invalid`,
+    );
   }
 
   const supabase = getSupabaseAdminClient();
@@ -95,6 +104,8 @@ async function updateInquiryStatus(formData: FormData) {
 export default async function AdminInquiriesPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const inputKey = typeof params?.key === "string" ? params.key : "";
+  const statusError =
+    typeof params?.statusError === "string" ? params.statusError : "";
 
   const adminPassword = process.env.ADMIN_PASSWORD;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -205,6 +216,12 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
           </div>
         </div>
 
+        {statusError === "invalid" ? (
+          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
+            Status was not saved because it is not a supported pipeline status.
+          </div>
+        ) : null}
+
         {error ? (
           <div className="rounded-2xl border border-red-200 bg-white p-6 text-red-700 shadow-sm">
             <h2 className="text-lg font-semibold">读取询盘失败</h2>
@@ -307,14 +324,24 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
                             value={inquiry.id}
                           />
 
+                          <span
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getInquiryStatusBadgeClass(
+                              inquiry.status,
+                            )}`}
+                          >
+                            {getInquiryStatusLabel(inquiry.status)}
+                          </span>
+
                           <select
                             name="status"
-                            defaultValue={inquiry.status || "new"}
+                            defaultValue={getInquiryStatusSelectValue(
+                              inquiry.status,
+                            )}
                             className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-slate-900"
                           >
-                            {STATUS_OPTIONS.map((status) => (
-                              <option key={status} value={status}>
-                                {status}
+                            {INQUIRY_STATUS_OPTIONS.map((status) => (
+                              <option key={status.value} value={status.value}>
+                                {status.value}
                               </option>
                             ))}
                           </select>

@@ -1,6 +1,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { createClient } from "@supabase/supabase-js";
+import {
+  getInquiryStatusBadgeClass,
+  getInquiryStatusLabel,
+} from "@/lib/inquiry-status";
 
 export const dynamic = "force-dynamic";
 
@@ -66,28 +70,6 @@ function formatDate(value: unknown) {
   }
 
   return date.toLocaleString();
-}
-
-function getStatusBadgeClass(status: unknown) {
-  const normalized = typeof status === "string" ? status.toLowerCase() : "";
-
-  if (normalized === "new") {
-    return "border-blue-200 bg-blue-50 text-blue-700";
-  }
-
-  if (normalized === "contacted" || normalized === "quoted") {
-    return "border-amber-200 bg-amber-50 text-amber-700";
-  }
-
-  if (normalized === "closed") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
-  }
-
-  if (normalized === "spam") {
-    return "border-red-200 bg-red-50 text-red-700";
-  }
-
-  return "border-slate-200 bg-slate-50 text-slate-700";
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -367,15 +349,13 @@ export default async function InquiryDetailPage({
             </p>
           </div>
 
-          {status ? (
-            <span
-              className={`inline-flex w-fit rounded-full border px-4 py-2 text-sm font-semibold ${getStatusBadgeClass(
-                status
-              )}`}
-            >
-              {formatText(status)}
-            </span>
-          ) : null}
+          <span
+            className={`inline-flex w-fit rounded-full border px-4 py-2 text-sm font-semibold ${getInquiryStatusBadgeClass(
+              status,
+            )}`}
+          >
+            {getInquiryStatusLabel(status)}
+          </span>
         </div>
 
         <div className="space-y-6">
@@ -399,7 +379,7 @@ export default async function InquiryDetailPage({
 
           <InfoCard title="Status & Timeline">
             <dl>
-              <InfoRow label="Status" value={status} />
+              <InfoRow label="Status" value={getInquiryStatusLabel(status)} />
               <InfoRow label="Created At" value={formatDate(getFirstValue(inquiry, ["created_at"]))} />
               <InfoRow label="Updated At" value={formatDate(getFirstValue(inquiry, ["updated_at"]))} />
             </dl>
