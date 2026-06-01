@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { Resend } from "resend";
 
 type CartItem = {
   id?: string;
@@ -19,6 +20,99 @@ type InquiryRequestBody = {
   cartItems?: CartItem[];
   cartTotal?: number;
 };
+
+function formatCartItems(cartItems: CartItem[]) {
+  if (cartItems.length === 0) {
+    return "No cart items submitted.";
+  }
+
+  return cartItems
+    .map((item, index) => {
+      const name = item.name || item.slug || item.id || "Unknown product";
+      const price = typeof item.price === "number" ? item.price : 0;
+      const quantity = typeof item.quantity === "number" ? item.quantity : 1;
+
+      return `${index + 1}. ${name} × ${quantity} - $${price}`;
+    })
+    .join("\n");
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+async function sendInquiryNotification(params: {
+  name: string;
+  email: string;
+  interestedProduct: string | null;
+  message: string | null;
+  country: string | null;
+  sourcePage: string;
+  cartItems: CartItem[];
+  cartTotal: number;
+  createdAt?: string;
+}) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const notifyEmail = process.env.INQUIRY_NOTIFY_EMAIL;
+
+  if (!resendApiKey || !notifyEmail) {
+    console.warn("Resend environment variables are missing.");
+    return;
+  }
+
+  const resend = new Resend(resendApiKey);
+
+  const cartText = formatCartItems(params.cartItems);
+
+  const safeName = escapeHtml(params.name);
+  const safeEmail = escapeHtml(params.email);
+  const safeInterestedProduct = escapeHtml(
+    params.interestedProduct || "Not specified"
+  );
+  const safeCountry = escapeHtml(params.country || "Not specified");
+  const safeMessage = escapeHtml(params.message || "No message submitted.");
+  const safeSourcePage = escapeHtml(params.sourcePage);
+  const safeCartText = escapeHtml(cartText);
+  const safeCreatedAt = escapeHtml(params.createdAt || new Date().toISOString());
+
+  await resend.emails.send({
+    from: "Cross Border Store <onboarding@resend.dev>",
+    to: notifyEmail,
+    subject: `New inquiry from ${params.name}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
+        <h2>New Customer Inquiry</h2>
+
+        <p>A new inquiry has been submitted from your cross-border store.</p>
+
+        <h3>Customer Info</h3>
+        <p><strong>Name:</strong> ${safeName}</p>
+        <p><strong>Email:</strong> ${safeEmail}</p>
+        <p><strong>Country / Region:</strong> ${safeCountry}</p>
+
+        <h3>Inquiry Details</h3>
+        <p><strong>Interested Product:</strong> ${safeInterestedProduct}</p>
+        <p><strong>Message:</strong></p>
+        <p style="white-space: pre-line;">${safeMessage}</p>
+
+        <h3>Cart Info</h3>
+        <p><strong>Estimated Cart Total:</strong> $${params.cartTotal.toFixed(
+          2
+        )}</p>
+        <pre style="white-space: pre-wrap; background: #f5f5f4; padding: 12px; border-radius: 12px;">${safeCartText}</pre>
+
+        <h3>Source</h3>
+        <p><strong>Source Page:</strong> ${safeSourcePage}</p>
+        <p><strong>Submitted At:</strong> ${safeCreatedAt}</p>
+      </div>
+    `,
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -87,6 +181,22 @@ export async function POST(request: NextRequest) {
         },
         { status: 500 }
       );
+    }
+
+    try {
+      await sendInquiryNotification({
+        name,
+        email,
+        interestedProduct,
+        message,
+        country,
+        sourcePage,
+        cartItems,
+        cartTotal,
+        createdAt: data.created_at,
+      });
+    } catch (emailError) {
+      console.error("Failed to send inquiry notification email:", emailError);
     }
 
     return NextResponse.json(
