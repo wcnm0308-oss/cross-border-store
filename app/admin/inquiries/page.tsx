@@ -1,4 +1,7 @@
+import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +21,19 @@ type Inquiry = {
 type PageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
+
+const STATUS_OPTIONS = ["new", "contacted", "quoted", "closed", "spam"];
+
+function getSupabaseAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    throw new Error("Supabase environment variables are missing.");
+  }
+
+  return createClient(supabaseUrl, supabaseServiceRoleKey);
+}
 
 function formatDate(value: string | null) {
   if (!value) return "-";
@@ -49,6 +65,33 @@ function formatCartItems(value: unknown) {
   }
 }
 
+async function updateInquiryStatus(formData: FormData) {
+  "use server";
+
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const inputKey = String(formData.get("adminKey") || "");
+  const inquiryId = String(formData.get("inquiryId") || "");
+  const nextStatus = String(formData.get("status") || "new");
+
+  if (!adminPassword || inputKey !== adminPassword) {
+    redirect("/admin/inquiries");
+  }
+
+  if (!inquiryId || !STATUS_OPTIONS.includes(nextStatus)) {
+    redirect(`/admin/inquiries?key=${encodeURIComponent(inputKey)}`);
+  }
+
+  const supabase = getSupabaseAdminClient();
+
+  await supabase
+    .from("inquiries")
+    .update({ status: nextStatus })
+    .eq("id", inquiryId);
+
+  revalidatePath("/admin/inquiries");
+  redirect(`/admin/inquiries?key=${encodeURIComponent(inputKey)}`);
+}
+
 export default async function AdminInquiriesPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const inputKey = typeof params?.key === "string" ? params.key : "";
@@ -64,10 +107,10 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
       <main className="min-h-screen bg-slate-50 px-6 py-10">
         <div className="mx-auto max-w-3xl rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
           <h1 className="text-2xl font-semibold text-red-700">
-            Admin password is not configured
+            管理员密码未配置
           </h1>
           <p className="mt-3 text-sm text-slate-600">
-            Please add ADMIN_PASSWORD to your environment variables first.
+            请先把 ADMIN_PASSWORD 添加到你的环境变量里。
           </p>
         </div>
       </main>
@@ -80,10 +123,10 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
         <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm font-medium text-slate-500">Admin</p>
           <h1 className="mt-2 text-2xl font-semibold text-slate-900">
-            Inquiry Management
+            询盘管理后台
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            Enter the admin password to view customer inquiry records.
+            输入管理员密码后，可以查看和管理客户询盘记录。
           </p>
 
           <form className="mt-6 space-y-4" method="get">
@@ -92,7 +135,7 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
                 htmlFor="key"
                 className="block text-sm font-medium text-slate-700"
               >
-                Admin Password
+                管理员密码
               </label>
               <input
                 id="key"
@@ -100,7 +143,7 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
                 type="password"
                 required
                 className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-900"
-                placeholder="Enter password"
+                placeholder="输入密码"
               />
             </div>
 
@@ -108,7 +151,7 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
               type="submit"
               className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
-              View Inquiries
+              进入后台
             </button>
           </form>
         </div>
@@ -121,17 +164,17 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
       <main className="min-h-screen bg-slate-50 px-6 py-10">
         <div className="mx-auto max-w-3xl rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
           <h1 className="text-2xl font-semibold text-red-700">
-            Supabase environment variables are missing
+            Supabase 环境变量缺失
           </h1>
           <p className="mt-3 text-sm text-slate-600">
-            Please check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
+            请检查 NEXT_PUBLIC_SUPABASE_URL 和 SUPABASE_SERVICE_ROLE_KEY。
           </p>
         </div>
       </main>
     );
   }
 
-  const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+  const supabase = getSupabaseAdminClient();
 
   const { data, error } = await supabase
     .from("inquiries")
@@ -153,8 +196,7 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
               Customer Inquiries
             </h1>
             <p className="mt-3 text-sm text-slate-600">
-              View the latest inquiry records submitted from your cross-border
-              store.
+              查看客户询盘，并管理每条询盘的跟进状态。
             </p>
           </div>
 
@@ -165,16 +207,16 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
 
         {error ? (
           <div className="rounded-2xl border border-red-200 bg-white p-6 text-red-700 shadow-sm">
-            <h2 className="text-lg font-semibold">Failed to load inquiries</h2>
+            <h2 className="text-lg font-semibold">读取询盘失败</h2>
             <p className="mt-2 text-sm">{error.message}</p>
           </div>
         ) : inquiries.length === 0 ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
             <h2 className="text-xl font-semibold text-slate-900">
-              No inquiries yet
+              暂无询盘
             </h2>
             <p className="mt-2 text-sm text-slate-600">
-              New customer inquiries will appear here after form submission.
+              客户提交询盘后，会显示在这里。
             </p>
           </div>
         ) : (
@@ -196,7 +238,7 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
                       Country
                     </th>
                     <th className="px-4 py-3 text-left font-semibold text-slate-700">
-                      Interested Product
+                      Product
                     </th>
                     <th className="px-4 py-3 text-left font-semibold text-slate-700">
                       Cart
@@ -206,6 +248,9 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
                     </th>
                     <th className="px-4 py-3 text-left font-semibold text-slate-700">
                       Status
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-slate-700">
+                      Details
                     </th>
                     <th className="px-4 py-3 text-left font-semibold text-slate-700">
                       Message
@@ -219,31 +264,81 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
                       <td className="whitespace-nowrap px-4 py-4 text-slate-600">
                         {formatDate(inquiry.created_at)}
                       </td>
+
                       <td className="whitespace-nowrap px-4 py-4 font-medium text-slate-900">
                         {inquiry.name || "-"}
                       </td>
+
                       <td className="whitespace-nowrap px-4 py-4 text-slate-700">
                         {inquiry.email || "-"}
                       </td>
+
                       <td className="whitespace-nowrap px-4 py-4 text-slate-700">
                         {inquiry.country || "-"}
                       </td>
+
                       <td className="min-w-48 px-4 py-4 text-slate-700">
                         {inquiry.interested_product || "-"}
                       </td>
+
                       <td className="min-w-64 px-4 py-4">
                         <pre className="max-h-40 overflow-auto whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-700">
                           {formatCartItems(inquiry.cart_items)}
                         </pre>
                       </td>
+
                       <td className="whitespace-nowrap px-4 py-4 text-slate-700">
                         {inquiry.cart_total ?? "-"}
                       </td>
+
                       <td className="whitespace-nowrap px-4 py-4">
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                          {inquiry.status || "new"}
-                        </span>
+                        <form
+                          action={updateInquiryStatus}
+                          className="flex items-center gap-2"
+                        >
+                          <input
+                            type="hidden"
+                            name="adminKey"
+                            value={inputKey}
+                          />
+                          <input
+                            type="hidden"
+                            name="inquiryId"
+                            value={inquiry.id}
+                          />
+
+                          <select
+                            name="status"
+                            defaultValue={inquiry.status || "new"}
+                            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 outline-none focus:border-slate-900"
+                          >
+                            {STATUS_OPTIONS.map((status) => (
+                              <option key={status} value={status}>
+                                {status}
+                              </option>
+                            ))}
+                          </select>
+
+                          <button
+                            type="submit"
+                            className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
+                          >
+                            Save
+                          </button>
+                        </form>
                       </td>
+
+                      <td className="whitespace-nowrap px-4 py-4">
+                        <Link
+                          href={`/admin/inquiries/${encodeURIComponent(
+                            inquiry.id
+                          )}?key=${encodeURIComponent(inputKey)}`}
+                          className="inline-flex rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                        >
+                          View Details
+                        </Link>
+                      </td>
+
                       <td className="min-w-80 px-4 py-4 leading-6 text-slate-700">
                         {inquiry.message || "-"}
                       </td>
