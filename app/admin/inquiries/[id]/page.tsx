@@ -256,6 +256,43 @@ function MessageCard({
   );
 }
 
+function getSearchParam(
+  params: Awaited<PageProps["searchParams"]>,
+  key: string,
+) {
+  const value = params?.[key];
+
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function buildBackHref(params: {
+  key: string;
+  q?: string;
+  status?: string;
+  dateRange?: string;
+}) {
+  if (!params.key) {
+    return "/admin/inquiries";
+  }
+
+  const searchParams = new URLSearchParams();
+  searchParams.set("key", params.key);
+
+  if (params.q) {
+    searchParams.set("q", params.q);
+  }
+
+  if (params.status) {
+    searchParams.set("status", params.status);
+  }
+
+  if (params.dateRange && params.dateRange !== "all") {
+    searchParams.set("dateRange", params.dateRange);
+  }
+
+  return `/admin/inquiries?${searchParams.toString()}`;
+}
+
 export default async function InquiryDetailPage({
   params,
   searchParams,
@@ -264,11 +301,13 @@ export default async function InquiryDetailPage({
     params,
     searchParams,
   ]);
-  const inputKey =
-    typeof resolvedSearchParams?.key === "string" ? resolvedSearchParams.key : "";
-  const backHref = inputKey
-    ? `/admin/inquiries?key=${encodeURIComponent(inputKey)}`
-    : "/admin/inquiries";
+  const inputKey = getSearchParam(resolvedSearchParams, "key");
+  const backHref = buildBackHref({
+    key: inputKey,
+    q: getSearchParam(resolvedSearchParams, "q"),
+    status: getSearchParam(resolvedSearchParams, "status"),
+    dateRange: getSearchParam(resolvedSearchParams, "dateRange"),
+  });
 
   const adminPassword = process.env.ADMIN_PASSWORD;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

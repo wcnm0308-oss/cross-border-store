@@ -13,6 +13,7 @@ import {
 export const dynamic = "force-dynamic";
 
 type Inquiry = {
+  [key: string]: unknown;
   id: string;
   name: string | null;
   email: string | null;
@@ -28,6 +29,33 @@ type Inquiry = {
 type PageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
+
+const DATE_RANGE_OPTIONS = [
+  { value: "all", label: "All time" },
+  { value: "today", label: "Today" },
+  { value: "last7", label: "Last 7 days" },
+  { value: "last30", label: "Last 30 days" },
+] as const;
+
+type DateRange = (typeof DATE_RANGE_OPTIONS)[number]["value"];
+
+const SEARCH_FIELDS = [
+  "name",
+  "customer_name",
+  "email",
+  "customer_email",
+  "company",
+  "company_name",
+  "country",
+  "destination_country",
+  "interested_product",
+  "cart_items",
+  "items",
+  "products",
+  "message",
+  "requirements",
+  "note",
+];
 
 function getSupabaseAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -70,6 +98,157 @@ function formatCartItems(value: unknown) {
   }
 }
 
+function getSearchParam(
+  params: Awaited<PageProps["searchParams"]>,
+  key: string,
+) {
+  const value = params?.[key];
+
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function isDateRange(value: unknown): value is DateRange {
+  return DATE_RANGE_OPTIONS.some((option) => option.value === value);
+}
+
+function stringifySearchValue(value: unknown, depth = 0): string {
+  if (value === null || value === undefined || depth > 4) {
+    return "";
+  }
+
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => stringifySearchValue(item, depth + 1)).join(" ");
+  }
+
+  if (typeof value === "object") {
+    return Object.values(value)
+      .map((item) => stringifySearchValue(item, depth + 1))
+      .join(" ");
+  }
+
+  return "";
+}
+
+function matchesKeyword(inquiry: Inquiry, keyword: string) {
+  if (!keyword) {
+    return true;
+  }
+
+  const normalizedKeyword = keyword.toLowerCase();
+  const searchableText = SEARCH_FIELDS.map((field) =>
+    stringifySearchValue(inquiry[field]),
+  )
+    .join(" ")
+    .toLowerCase();
+
+  return searchableText.includes(normalizedKeyword);
+}
+
+function getDateRangeStart(dateRange: DateRange) {
+  const start = new Date();
+
+  if (dateRange === "today") {
+    start.setHours(0, 0, 0, 0);
+    return start;
+  }
+
+  if (dateRange === "last7") {
+    start.setDate(start.getDate() - 7);
+    return start;
+  }
+
+  if (dateRange === "last30") {
+    start.setDate(start.getDate() - 30);
+    return start;
+  }
+
+  return null;
+}
+
+function matchesDateRange(value: unknown, dateRange: DateRange) {
+  const start = getDateRangeStart(dateRange);
+
+  if (!start) {
+    return true;
+  }
+
+  if (value === null || value === undefined || value === "") {
+    return true;
+  }
+
+  const date = new Date(String(value));
+
+  if (Number.isNaN(date.getTime())) {
+    return true;
+  }
+
+  return date >= start;
+}
+
+function buildAdminInquiriesHref(params: {
+  key: string;
+  q?: string;
+  status?: string;
+  dateRange?: string;
+  statusError?: string;
+}) {
+  const searchParams = new URLSearchParams();
+  searchParams.set("key", params.key);
+
+  if (params.q) {
+    searchParams.set("q", params.q);
+  }
+
+  if (params.status) {
+    searchParams.set("status", params.status);
+  }
+
+  if (params.dateRange && params.dateRange !== "all") {
+    searchParams.set("dateRange", params.dateRange);
+  }
+
+  if (params.statusError) {
+    searchParams.set("statusError", params.statusError);
+  }
+
+  return `/admin/inquiries?${searchParams.toString()}`;
+}
+
+function buildAdminInquiryDetailHref(
+  id: string,
+  params: {
+    key: string;
+    q?: string;
+    status?: string;
+    dateRange?: string;
+  },
+) {
+  const searchParams = new URLSearchParams();
+  searchParams.set("key", params.key);
+
+  if (params.q) {
+    searchParams.set("q", params.q);
+  }
+
+  if (params.status) {
+    searchParams.set("status", params.status);
+  }
+
+  if (params.dateRange && params.dateRange !== "all") {
+    searchParams.set("dateRange", params.dateRange);
+  }
+
+  return `/admin/inquiries/${encodeURIComponent(id)}?${searchParams.toString()}`;
+}
+
 async function updateInquiryStatus(formData: FormData) {
   "use server";
 
@@ -77,6 +256,15 @@ async function updateInquiryStatus(formData: FormData) {
   const inputKey = String(formData.get("adminKey") || "");
   const inquiryId = String(formData.get("inquiryId") || "");
   const nextStatus = String(formData.get("status") || "new");
+  const q = String(formData.get("q") || "").trim();
+  const statusFilter = String(formData.get("statusFilter") || "");
+  const dateRangeFilter = String(formData.get("dateRange") || "all");
+  const redirectHref = buildAdminInquiriesHref({
+    key: inputKey,
+    q,
+    status: isInquiryStatus(statusFilter) ? statusFilter : "",
+    dateRange: isDateRange(dateRangeFilter) ? dateRangeFilter : "all",
+  });
 
   if (!adminPassword || inputKey !== adminPassword) {
     redirect("/admin/inquiries");
@@ -84,9 +272,13 @@ async function updateInquiryStatus(formData: FormData) {
 
   if (!inquiryId || !isInquiryStatus(nextStatus)) {
     redirect(
-      `/admin/inquiries?key=${encodeURIComponent(
-        inputKey,
-      )}&statusError=invalid`,
+      buildAdminInquiriesHref({
+        key: inputKey,
+        q,
+        status: isInquiryStatus(statusFilter) ? statusFilter : "",
+        dateRange: isDateRange(dateRangeFilter) ? dateRangeFilter : "all",
+        statusError: "invalid",
+      }),
     );
   }
 
@@ -98,14 +290,23 @@ async function updateInquiryStatus(formData: FormData) {
     .eq("id", inquiryId);
 
   revalidatePath("/admin/inquiries");
-  redirect(`/admin/inquiries?key=${encodeURIComponent(inputKey)}`);
+  redirect(redirectHref);
 }
 
 export default async function AdminInquiriesPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const inputKey = typeof params?.key === "string" ? params.key : "";
-  const statusError =
-    typeof params?.statusError === "string" ? params.statusError : "";
+  const inputKey = getSearchParam(params, "key");
+  const q = getSearchParam(params, "q");
+  const rawStatusFilter = getSearchParam(params, "status");
+  const selectedStatus = isInquiryStatus(rawStatusFilter)
+    ? rawStatusFilter
+    : "";
+  const rawDateRange = getSearchParam(params, "dateRange");
+  const dateRange = isDateRange(rawDateRange) ? rawDateRange : "all";
+  const statusError = getSearchParam(params, "statusError");
+  const hasInvalidStatusFilter = Boolean(rawStatusFilter && !selectedStatus);
+  const hasActiveFilters = Boolean(q || selectedStatus || dateRange !== "all");
+  const clearFiltersHref = buildAdminInquiriesHref({ key: inputKey });
 
   const adminPassword = process.env.ADMIN_PASSWORD;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -189,13 +390,18 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
 
   const { data, error } = await supabase
     .from("inquiries")
-    .select(
-      "id,name,email,interested_product,message,cart_items,cart_total,country,status,created_at"
-    )
+    .select("*")
     .order("created_at", { ascending: false })
-    .limit(50);
+    .limit(100);
 
-  const inquiries = (data ?? []) as Inquiry[];
+  const allInquiries = (data ?? []) as Inquiry[];
+  const inquiries = allInquiries.filter((inquiry) => {
+    return (
+      matchesKeyword(inquiry, q) &&
+      (!selectedStatus || inquiry.status === selectedStatus) &&
+      matchesDateRange(inquiry.created_at, dateRange)
+    );
+  });
 
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-10">
@@ -212,13 +418,90 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
           </div>
 
           <div className="rounded-full bg-white px-4 py-2 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200">
-            Total shown: {inquiries.length}
+            Showing {inquiries.length} inquiries
           </div>
         </div>
+
+        <form
+          method="get"
+          className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+        >
+          <input type="hidden" name="key" value={inputKey} />
+
+          <div className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr_0.8fr_auto_auto] lg:items-end">
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold text-slate-700">
+                Keyword
+              </span>
+              <input
+                name="q"
+                type="search"
+                defaultValue={q}
+                placeholder="Search name, email, company, country, product..."
+                className="rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-900"
+              />
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold text-slate-700">
+                Status
+              </span>
+              <select
+                name="status"
+                defaultValue={selectedStatus}
+                className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-slate-900"
+              >
+                <option value="">All statuses</option>
+                {INQUIRY_STATUS_OPTIONS.map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.value}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-semibold text-slate-700">
+                Date Range
+              </span>
+              <select
+                name="dateRange"
+                defaultValue={dateRange}
+                className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-slate-900"
+              >
+                {DATE_RANGE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <button
+              type="submit"
+              className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            >
+              Apply Filters
+            </button>
+
+            <Link
+              href={clearFiltersHref}
+              className="rounded-xl border border-slate-300 px-5 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Clear Filters
+            </Link>
+          </div>
+        </form>
 
         {statusError === "invalid" ? (
           <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
             Status was not saved because it is not a supported pipeline status.
+          </div>
+        ) : null}
+
+        {hasInvalidStatusFilter ? (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-800">
+            Unsupported status filter ignored.
           </div>
         ) : null}
 
@@ -230,10 +513,14 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
         ) : inquiries.length === 0 ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
             <h2 className="text-xl font-semibold text-slate-900">
-              暂无询盘
+              {hasActiveFilters
+                ? "No inquiries match the current filters."
+                : "No inquiries yet"}
             </h2>
             <p className="mt-2 text-sm text-slate-600">
-              客户提交询盘后，会显示在这里。
+              {hasActiveFilters
+                ? "Try adjusting the keyword, status, or date range."
+                : "Customer inquiries will appear here after submission."}
             </p>
           </div>
         ) : (
@@ -323,6 +610,17 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
                             name="inquiryId"
                             value={inquiry.id}
                           />
+                          <input type="hidden" name="q" value={q} />
+                          <input
+                            type="hidden"
+                            name="statusFilter"
+                            value={selectedStatus}
+                          />
+                          <input
+                            type="hidden"
+                            name="dateRange"
+                            value={dateRange}
+                          />
 
                           <span
                             className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${getInquiryStatusBadgeClass(
@@ -357,9 +655,12 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
 
                       <td className="whitespace-nowrap px-4 py-4">
                         <Link
-                          href={`/admin/inquiries/${encodeURIComponent(
-                            inquiry.id
-                          )}?key=${encodeURIComponent(inputKey)}`}
+                          href={buildAdminInquiryDetailHref(inquiry.id, {
+                            key: inputKey,
+                            q,
+                            status: selectedStatus,
+                            dateRange,
+                          })}
                           className="inline-flex rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
                         >
                           View Details
