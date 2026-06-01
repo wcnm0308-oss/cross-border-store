@@ -61,7 +61,7 @@ export const products: Product[] = [
     shortDescription:
       "A small home-office accessory kit for cleaner desks and better cable management.",
     description:
-      "A low-risk sample product for learning independent store structure, product cards, checkout flow, and inquiry conversion.",
+      "A low-risk sample product for learning independent store structure, product cards, RFQ flow, and inquiry conversion.",
     highlights: [
       "Small and lightweight product example",
       "Clear use case for overseas customers",

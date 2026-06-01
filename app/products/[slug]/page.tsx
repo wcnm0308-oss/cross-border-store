@@ -71,16 +71,16 @@ export default async function ProductDetailPage({
               <AddToCartButton product={product} />
 
               <Link
-                href="/contact"
+                href="/inquiry"
                 className="rounded-full border border-stone-300 px-8 py-4 text-center text-sm font-semibold hover:bg-white"
               >
-                Send Inquiry
+                Request a Quote
               </Link>
             </div>
 
             <p className="mt-5 text-sm leading-6 text-stone-500">
-              Shipping, payment, and inventory logic will be connected in later
-              steps. This page is currently a static product detail MVP.
+              Add this product to your inquiry cart to request pricing, MOQ,
+              shipping options, and lead time.
             </p>
           </div>
         </section>

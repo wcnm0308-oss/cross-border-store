@@ -45,33 +45,34 @@ export default function CartPage() {
       <section className="mx-auto max-w-5xl">
         <section className="py-16">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-stone-500">
-            Shopping Cart
+            Inquiry Cart
           </p>
 
           <h1 className="mt-4 text-5xl font-bold tracking-tight md:text-6xl">
-            Your selected products.
+            Review the products you want to quote.
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
-            This cart is stored locally in the browser for our MVP. Later, it
-            can connect to checkout, inquiry submission, payment, and order
-            management.
+            Submit your inquiry to request pricing, MOQ, shipping, and lead
+            time.
           </p>
         </section>
 
         {cartItems.length === 0 ? (
           <section className="rounded-[2rem] border border-stone-200 bg-white p-8 text-center shadow-sm">
-            <h2 className="text-2xl font-bold">Your cart is empty.</h2>
+            <h2 className="text-2xl font-bold">
+              Your inquiry cart is empty.
+            </h2>
 
             <p className="mt-4 text-sm leading-6 text-stone-600">
-              Go back to the product collection and add something to your cart.
+              Continue browsing products and add items you want us to quote.
             </p>
 
             <Link
               href="/products"
               className="mt-8 inline-block rounded-full bg-stone-950 px-8 py-4 text-sm font-semibold text-white hover:bg-stone-800"
             >
-              View Products
+              Continue Browsing
             </Link>
           </section>
         ) : (
@@ -119,21 +120,21 @@ export default function CartPage() {
             </div>
 
             <aside className="h-fit rounded-[2rem] border border-stone-200 bg-white p-6 shadow-sm">
-              <h2 className="text-xl font-bold">Cart Summary</h2>
+              <h2 className="text-xl font-bold">Inquiry Summary</h2>
 
               <div className="mt-6 flex items-center justify-between border-t border-stone-200 pt-6">
                 <span className="text-sm font-semibold text-stone-600">
-                  Estimated Total
+                  Estimated Product Total
                 </span>
 
                 <span className="text-2xl font-bold">${totalPrice} USD</span>
               </div>
 
               <Link
-                href="/contact"
+                href="/inquiry"
                 className="mt-8 block rounded-full bg-stone-950 px-8 py-4 text-center text-sm font-semibold text-white hover:bg-stone-800"
               >
-                Send Inquiry
+                Submit Inquiry
               </Link>
 
               <button
@@ -141,12 +142,12 @@ export default function CartPage() {
                 onClick={handleClearCart}
                 className="mt-3 w-full rounded-full border border-stone-300 px-8 py-4 text-sm font-semibold hover:bg-stone-50"
               >
-                Clear Cart
+                Clear Inquiry Cart
               </button>
 
               <p className="mt-5 text-xs leading-5 text-stone-500">
-                Real checkout is not connected yet. For now, this cart helps us
-                complete the product selection and inquiry flow.
+                This RFQ flow sends your selected products to our team so we can
+                confirm pricing, MOQ, shipping, and lead time.
               </p>
             </aside>
           </section>

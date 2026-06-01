@@ -27,10 +27,10 @@ export default function Home() {
               </a>
 
               <a
-                href="/contact"
+                href="/inquiry"
                 className="rounded-full border border-stone-300 px-8 py-4 text-center text-sm font-semibold text-stone-950 hover:bg-white"
               >
-                Get Inquiry
+                Request a Quote
               </a>
             </div>
           </div>
@@ -49,8 +49,8 @@ export default function Home() {
 
                 <div>
                   <p className="text-sm leading-6 text-stone-600">
-                    Product image, price, selling points, shipping notes, and
-                    inquiry button will be placed here.
+                    Product image, quote-oriented details, selling points,
+                    shipping notes, and inquiry action will be placed here.
                   </p>
 
                   <div className="mt-6 rounded-full bg-stone-950 px-5 py-3 text-center text-sm font-semibold text-white">

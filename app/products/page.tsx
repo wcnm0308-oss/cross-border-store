@@ -16,8 +16,8 @@ export default function ProductsPage() {
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
             This is the first product collection page of our independent store
-            MVP. Later, each product will connect to a detail page, cart flow,
-            inquiry form, and checkout logic.
+            MVP. Each product can be reviewed, added to the inquiry cart, and
+            submitted for a custom quote.
           </p>
         </section>
 

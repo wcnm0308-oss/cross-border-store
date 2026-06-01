@@ -62,12 +62,13 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
         onClick={handleAddToCart}
         className="rounded-full bg-stone-950 px-8 py-4 text-sm font-semibold text-white hover:bg-stone-800"
       >
-        Add to Cart
+        Add to Inquiry Cart
       </button>
 
       {added && (
         <p className="rounded-2xl bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
-          Added to cart. We will build the cart page in the next step.
+          Added to inquiry cart. You can review selected products before
+          submitting your inquiry.
         </p>
       )}
     </div>

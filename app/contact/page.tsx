@@ -79,7 +79,7 @@ export default function ContactPage() {
       interestedProduct: String(formData.get("interestedProduct") || "").trim(),
       country: String(formData.get("country") || "").trim(),
       message: String(formData.get("message") || "").trim(),
-      sourcePage: "/contact",
+      sourcePage: window.location.pathname,
       cartItems,
       cartTotal,
     };
@@ -116,26 +116,24 @@ export default function ContactPage() {
         <section className="grid gap-10 py-16 md:grid-cols-[1fr_1.1fr]">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-stone-500">
-              Global Inquiry
+              Submit Inquiry
             </p>
 
             <h1 className="mt-4 text-5xl font-bold tracking-tight md:text-6xl">
-              Tell us what you are looking for.
+              Tell us your product requirements.
             </h1>
 
             <p className="mt-6 text-lg leading-8 text-stone-600">
-              This page is the inquiry entry for our cross-border independent
-              store. Customers can leave product needs, destination country,
-              purchase quantity and shipping questions here.
+              We will review your request and contact you with pricing, MOQ,
+              shipping options, and lead time.
             </p>
 
             <div className="mt-8 rounded-3xl bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold">Current MVP Goal</h2>
+              <h2 className="text-lg font-bold">Request a Quote</h2>
               <p className="mt-3 text-sm leading-6 text-stone-600">
-                This version does not process direct payment yet. It collects
-                real customer inquiries and saves them into our database, so we
-                can confirm product availability, shipping cost and payment
-                method manually.
+                Share the products, target quantity, destination country, and
+                any packaging or shipping requirements. Our team will follow up
+                with quote details by email.
               </p>
             </div>
           </div>
@@ -195,7 +193,7 @@ export default function ContactPage() {
                 <textarea
                   name="message"
                   required
-                  placeholder="Tell us your needs, quantity, destination country, shipping questions or wholesale request."
+                  placeholder="Tell us your target quantity, destination country, shipping questions, packaging needs, or wholesale request."
                   rows={5}
                   className="resize-none rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"
                 />
@@ -223,9 +221,9 @@ export default function ContactPage() {
               )}
 
               <p className="text-xs leading-5 text-stone-500">
-                Your inquiry will be saved into our database. If your cart
-                contains products, the cart items and estimated total will also
-                be submitted together.
+                Your inquiry will be saved into our database. If your inquiry
+                cart contains products, the selected items and estimated product
+                total will also be submitted together.
               </p>
             </div>
           </form>

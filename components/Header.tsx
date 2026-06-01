@@ -55,20 +55,20 @@ export default function Header() {
   return (
     <header className="flex items-center justify-between">
       <Link href="/" className="text-xl font-bold tracking-tight">
-        跨境商店
+        Cross Border Store
       </Link>
 
       <nav className="hidden items-center gap-6 text-sm font-semibold text-stone-600 md:flex">
         <Link href="/products" className="hover:text-stone-950">
-          产品展示
+          Products
         </Link>
 
         <Link href="/cart" className="hover:text-stone-950">
-          购物车
+          Inquiry Cart
         </Link>
 
-        <Link href="/contact" className="hover:text-stone-950">
-          询盘
+        <Link href="/inquiry" className="hover:text-stone-950">
+          Submit Inquiry
         </Link>
       </nav>
 
@@ -76,7 +76,7 @@ export default function Header() {
         href="/cart"
         className="rounded-full border border-stone-300 px-5 py-2 text-sm font-semibold hover:bg-white"
       >
-        查看购物车
+        View Inquiry Cart
         {cartCount > 0 && (
           <span className="ml-2 rounded-full bg-stone-950 px-2 py-0.5 text-xs text-white">
             {cartCount}
