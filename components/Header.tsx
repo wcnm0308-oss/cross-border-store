@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -14,6 +14,13 @@ type CartItem = {
 };
 
 const cartKey = "cross-border-store-cart";
+
+const navItems = [
+  { href: "/products", label: "Products" },
+  { href: "/about", label: "About" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/inquiry", label: "Submit Inquiry" },
+];
 
 export default function Header() {
   const pathname = usePathname();
@@ -53,30 +60,39 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="flex items-center justify-between">
-      <Link href="/" className="text-xl font-bold tracking-tight">
+    <header className="flex items-center justify-between gap-6">
+      <Link href="/" className="shrink-0 text-xl font-bold tracking-tight">
         Cross Border Store
       </Link>
 
       <nav className="hidden items-center gap-6 text-sm font-semibold text-stone-600 md:flex">
-        <Link href="/products" className="hover:text-stone-950">
-          Products
-        </Link>
+        {navItems.map((item) => {
+          const isActive =
+            item.href === "/products"
+              ? pathname.startsWith("/products")
+              : pathname === item.href;
 
-        <Link href="/cart" className="hover:text-stone-950">
-          Inquiry Cart
-        </Link>
-
-        <Link href="/inquiry" className="hover:text-stone-950">
-          Submit Inquiry
-        </Link>
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={
+                isActive
+                  ? "text-stone-950"
+                  : "hover:text-stone-950"
+              }
+            >
+              {item.label}
+            </Link>
+          );
+        })}
       </nav>
 
       <Link
         href="/cart"
-        className="rounded-full border border-stone-300 px-5 py-2 text-sm font-semibold hover:bg-white"
+        className="shrink-0 rounded-full border border-stone-300 px-5 py-2 text-sm font-semibold hover:bg-white"
       >
-        View Inquiry Cart
+        Inquiry Cart
         {cartCount > 0 && (
           <span className="ml-2 rounded-full bg-stone-950 px-2 py-0.5 text-xs text-white">
             {cartCount}
