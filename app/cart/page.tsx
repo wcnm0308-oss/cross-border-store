@@ -49,12 +49,12 @@ export default function CartPage() {
           </p>
 
           <h1 className="mt-4 text-5xl font-bold tracking-tight md:text-6xl">
-            Review the products you want to quote.
+            Review the products you want to ask about.
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
-            Submit your inquiry to request pricing, MOQ, shipping, and lead
-            time.
+            Submit your request to confirm availability, shipping, and payment
+            details before checkout is ready.
           </p>
         </section>
 
@@ -65,7 +65,7 @@ export default function CartPage() {
             </h2>
 
             <p className="mt-4 text-sm leading-6 text-stone-600">
-              Continue browsing products and add items you want us to quote.
+              Continue browsing products and add items you want to ask about.
             </p>
 
             <Link
@@ -120,7 +120,7 @@ export default function CartPage() {
             </div>
 
             <aside className="h-fit rounded-[2rem] border border-stone-200 bg-white p-6 shadow-sm">
-              <h2 className="text-xl font-bold">Inquiry Summary</h2>
+              <h2 className="text-xl font-bold">Request Summary</h2>
 
               <div className="mt-6 flex items-center justify-between border-t border-stone-200 pt-6">
                 <span className="text-sm font-semibold text-stone-600">
@@ -134,7 +134,7 @@ export default function CartPage() {
                 href="/inquiry"
                 className="mt-8 block rounded-full bg-stone-950 px-8 py-4 text-center text-sm font-semibold text-white hover:bg-stone-800"
               >
-                Submit Inquiry
+                Submit Order Request
               </Link>
 
               <button
@@ -146,8 +146,9 @@ export default function CartPage() {
               </button>
 
               <p className="mt-5 text-xs leading-5 text-stone-500">
-                This RFQ flow sends your selected products to our team so we can
-                confirm pricing, MOQ, shipping, and lead time.
+                This total is a price reference, not the final order amount.
+                We will confirm availability, shipping estimate, and payment
+                details before you place the order.
               </p>
             </aside>
           </section>

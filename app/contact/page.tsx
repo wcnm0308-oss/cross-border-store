@@ -121,24 +121,23 @@ export default function ContactPage() {
         <section className="grid gap-10 py-16 md:grid-cols-[1fr_1.1fr]">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-stone-500">
-              Submit Inquiry
+              Request Order
             </p>
 
             <h1 className="mt-4 text-5xl font-bold tracking-tight md:text-6xl">
-              Tell us your product requirements.
+              Ask about a product or request an order.
             </h1>
 
             <p className="mt-6 text-lg leading-8 text-stone-600">
-              We will review your request and contact you with pricing, MOQ,
-              shipping options, and lead time.
+              Before online checkout is ready, you can ask about availability,
+              international shipping, final cost, and payment details.
             </p>
 
             <div className="mt-8 rounded-3xl bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold">Request a Quote</h2>
+              <h2 className="text-lg font-bold">Ask Before Buying</h2>
               <p className="mt-3 text-sm leading-6 text-stone-600">
-                Share the products, target quantity, destination country, and
-                any packaging or shipping requirements. Our team will follow up
-                with quote details by email.
+                Share the product you like, your country, expected quantity, and
+                any delivery questions. We will reply by email before payment.
               </p>
             </div>
           </div>
@@ -171,18 +170,20 @@ export default function ContactPage() {
               </label>
 
               <label className="grid gap-2">
-                <span className="text-sm font-semibold">Company Name</span>
+                <span className="text-sm font-semibold">
+                  Company Name Optional
+                </span>
                 <input
                   name="companyName"
                   type="text"
-                  placeholder="Company or organization"
+                  placeholder="Company or organization if applicable"
                   className="rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"
                 />
               </label>
 
               <div className="grid gap-5 md:grid-cols-2">
                 <label className="grid gap-2">
-                  <span className="text-sm font-semibold">Phone</span>
+                  <span className="text-sm font-semibold">Phone Optional</span>
                   <input
                     name="phone"
                     type="text"
@@ -192,7 +193,9 @@ export default function ContactPage() {
                 </label>
 
                 <label className="grid gap-2">
-                  <span className="text-sm font-semibold">WhatsApp</span>
+                  <span className="text-sm font-semibold">
+                    WhatsApp Optional
+                  </span>
                   <input
                     name="whatsapp"
                     type="text"
@@ -209,6 +212,7 @@ export default function ContactPage() {
                 <input
                   name="country"
                   type="text"
+                  required
                   placeholder="United States, Canada, Germany..."
                   className="rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"
                 />
@@ -221,7 +225,7 @@ export default function ContactPage() {
                 <input
                   name="interestedProduct"
                   type="text"
-                  placeholder="Product name or product category"
+                  placeholder="Product name, product category, or cart items"
                   className="rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"
                 />
               </label>
@@ -233,16 +237,18 @@ export default function ContactPage() {
                 <input
                   name="quantity"
                   type="text"
-                  placeholder="Example: 500 pcs, 20 cartons, trial order"
+                  placeholder="Example: 1 piece, 3 pieces, 20 pieces"
                   className="rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"
                 />
               </label>
 
               <label className="grid gap-2">
-                <span className="text-sm font-semibold">Requirements</span>
+                <span className="text-sm font-semibold">
+                  Order Questions Optional
+                </span>
                 <textarea
                   name="requirements"
-                  placeholder="Packaging, private label, shipping terms, target price, or lead time requirements."
+                  placeholder="Ask about shipping, packaging, availability, color, size, or delivery time."
                   rows={4}
                   className="resize-none rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"
                 />
@@ -252,7 +258,8 @@ export default function ContactPage() {
                 <span className="text-sm font-semibold">Message</span>
                 <textarea
                   name="message"
-                  placeholder="Tell us your target quantity, destination country, shipping questions, packaging needs, or wholesale request."
+                  required
+                  placeholder="Tell us what you want to order and what you need to confirm before payment."
                   rows={5}
                   className="resize-none rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"
                 />
@@ -263,12 +270,12 @@ export default function ContactPage() {
                 disabled={status === "submitting"}
                 className="rounded-full bg-stone-950 px-8 py-4 text-sm font-semibold text-white hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-400"
               >
-                {status === "submitting" ? "Submitting..." : "Submit Inquiry"}
+                {status === "submitting" ? "Submitting..." : "Submit Request"}
               </button>
 
               {status === "success" && (
                 <div className="rounded-2xl bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
-                  Inquiry submitted successfully. We will review your request
+                  Request submitted successfully. We will review your message
                   and contact you by email.
                 </div>
               )}
@@ -280,9 +287,9 @@ export default function ContactPage() {
               )}
 
               <p className="text-xs leading-5 text-stone-500">
-                Your inquiry will be saved into our database. If your inquiry
-                cart contains products, the selected items and estimated product
-                total will also be submitted together.
+                Your request will be saved for reply. If your inquiry cart
+                contains products, the selected items and price reference will
+                also be submitted together.
               </p>
             </div>
           </form>

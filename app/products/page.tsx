@@ -13,24 +13,22 @@ export default function ProductsPage() {
             </p>
 
             <h1 className="mt-4 max-w-3xl text-5xl font-bold tracking-tight md:text-6xl">
-              Browse products and send sourcing inquiries.
+              Browse cross-border products.
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
-              This is an RFQ / inquiry-first product catalog for cross-border
-              buyers. Review product options, add items to the inquiry cart,
-              and send quantity, packaging, and shipping requirements before
-              quotation.
+              Explore product examples, ask questions before buying, and send
+              an order request while online checkout is being prepared.
             </p>
           </div>
 
           <div className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-sm">
             <p className="text-sm font-bold text-stone-950">
-              No direct checkout
+              Contact before payment
             </p>
             <p className="mt-3 text-sm leading-6 text-stone-600">
-              Pricing, MOQ, packaging, shipping method, and lead time are
-              confirmed through buyer inquiry and follow-up.
+              Availability, shipping estimate, final cost, and payment details
+              can be confirmed before you place an order.
             </p>
           </div>
         </section>
@@ -70,7 +68,7 @@ export default function ProductsPage() {
                 <div className="mt-5 space-y-3 border-t border-stone-200 pt-5">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">
-                      Indicative Price
+                      Price Reference
                     </p>
                     <p className="mt-1 text-lg font-bold">
                       ${product.price} {product.currency}
@@ -83,7 +81,7 @@ export default function ProductsPage() {
                   <div className="grid gap-2 text-xs leading-5 text-stone-600">
                     <p className="rounded-2xl bg-stone-50 px-4 py-3">
                       <span className="font-semibold text-stone-950">
-                        MOQ:
+                        Order note:
                       </span>{" "}
                       {product.moq}
                     </p>
@@ -101,7 +99,7 @@ export default function ProductsPage() {
                     href={`/products/${product.slug}`}
                     className="rounded-full border border-stone-300 px-6 py-3 text-center text-sm font-semibold hover:bg-stone-50"
                   >
-                    View details
+                    View Details
                   </Link>
 
                   <AddToCartButton product={product} />
@@ -113,17 +111,16 @@ export default function ProductsPage() {
 
         <section className="mt-12 rounded-[2rem] bg-stone-950 px-6 py-12 text-center text-white md:px-12">
           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-stone-400">
-            Custom RFQ
+            Ask Before Buying
           </p>
 
           <h2 className="mx-auto mt-4 max-w-3xl text-3xl font-bold tracking-tight md:text-5xl">
-            Need a custom quotation?
+            Have a question before ordering?
           </h2>
 
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-stone-300 md:text-base">
-            Send your product list, target quantity, destination country,
-            packaging request, and any sourcing notes. We will follow up with
-            quotation details.
+            Tell us which product you like, where it should be shipped, and
+            what you want to confirm before payment.
           </p>
 
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
@@ -131,7 +128,7 @@ export default function ProductsPage() {
               href="/inquiry"
               className="rounded-full bg-white px-8 py-4 text-center text-sm font-semibold text-stone-950 hover:bg-stone-100"
             >
-              Submit Inquiry
+              Request Order
             </Link>
 
             <Link

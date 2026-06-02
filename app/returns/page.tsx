@@ -6,25 +6,25 @@
       </p>
 
       <h1 className="mt-4 text-4xl font-bold tracking-tight text-stone-950">
-        Return terms are handled according to the final order agreement.
+        Return terms depend on the confirmed order details.
       </h1>
 
       <div className="mt-8 space-y-6 text-stone-700">
         <p>
-          Because many cross-border orders involve customized quantities,
-          packaging, specifications, or logistics arrangements, return and refund
-          terms should be confirmed before the order is finalized.
+          Cross-border return and refund handling depends on product condition,
+          shipping status, packaging, and the final order terms confirmed before
+          payment.
         </p>
 
         <p>
           If there is a product quality issue, shortage, wrong shipment, or
-          delivery problem, buyers should contact us with order information,
-          photos, videos, and related documents for review.
+          delivery problem, please contact us with order information, photos,
+          videos, and related details for review.
         </p>
 
         <p>
           Final handling may include replacement, partial refund, reshipment, or
-          other solutions agreed by both sides.
+          another solution agreed during support communication.
         </p>
       </div>
     </main>

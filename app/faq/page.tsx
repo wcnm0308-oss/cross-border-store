@@ -1,23 +1,28 @@
-﻿const faqs = [
+const faqs = [
   {
-    question: "Can I request a quotation before placing an order?",
+    question: "Can I order as an individual buyer?",
     answer:
-      "Yes. This website is inquiry-first. You can add products to the inquiry cart and submit your requirements for follow-up.",
+      "Yes. This store is designed for individual cross-border buyers first. Small orders and product questions are welcome.",
   },
   {
-    question: "Do I need a large order quantity?",
+    question: "Why do I need to submit a request instead of checkout now?",
     answer:
-      "Quantity requirements depend on the product, packaging, and supply arrangement. You can include your expected quantity in the inquiry.",
+      "Online checkout is not ready yet. You can submit a request so we can confirm availability, delivery, final cost, and payment details before you order.",
   },
   {
-    question: "Can you ship internationally?",
+    question: "Can I ask about shipping before payment?",
     answer:
-      "International shipping options depend on the destination country, product type, and order details. Shipping terms are confirmed before quotation.",
+      "Yes. Please share your destination country and the products you are interested in, and we can discuss the shipping estimate before payment.",
   },
   {
-    question: "Are prices fixed on the website?",
+    question: "Can I buy small quantities?",
     answer:
-      "For B2B and cross-border inquiries, prices may change based on quantity, specification, packaging, and logistics requirements.",
+      "Yes. You can ask about one item, a few pieces, or a larger quantity. Availability and delivery details may vary by product.",
+  },
+  {
+    question: "How will I receive the final price?",
+    answer:
+      "After you submit a request, we review the products, quantity, destination country, and shipping needs, then reply by email with the next step.",
   },
 ];
 
@@ -29,7 +34,7 @@ export default function FaqPage() {
       </p>
 
       <h1 className="mt-4 text-4xl font-bold tracking-tight text-stone-950">
-        Common questions from buyers.
+        Common questions before ordering.
       </h1>
 
       <div className="mt-10 space-y-4">

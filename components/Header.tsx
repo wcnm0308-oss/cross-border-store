@@ -19,7 +19,7 @@ const navItems = [
   { href: "/products", label: "Products" },
   { href: "/about", label: "About" },
   { href: "/faq", label: "FAQ" },
-  { href: "/inquiry", label: "Submit Inquiry" },
+  { href: "/inquiry", label: "Request Order" },
 ];
 
 export default function Header() {

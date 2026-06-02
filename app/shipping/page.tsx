@@ -6,24 +6,23 @@
       </p>
 
       <h1 className="mt-4 text-4xl font-bold tracking-tight text-stone-950">
-        Shipping options are confirmed before quotation.
+        Shipping details are confirmed before payment.
       </h1>
 
       <div className="mt-8 space-y-6 text-stone-700">
         <p>
-          Shipping methods, lead time, and delivery costs depend on product type,
-          order quantity, destination country, and buyer requirements.
+          International shipping cost depends on destination country, product
+          type, quantity, packaging, and available delivery options.
         </p>
 
         <p>
-          For inquiry-based orders, we usually confirm shipping details together
-          with the quotation, including estimated production time, packaging,
-          export arrangement, and available logistics options.
+          Because online checkout is still being prepared, you can submit a
+          request first and ask about the shipping estimate before payment.
         </p>
 
         <p>
-          Buyers can include destination country, expected quantity, and delivery
-          requirements when submitting an inquiry.
+          Please include your destination country, expected quantity, and any
+          delivery questions when submitting an order request.
         </p>
       </div>
     </main>

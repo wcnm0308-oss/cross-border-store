@@ -23,9 +23,9 @@ export default function Footer() {
             Cross Border Store
           </h2>
           <p className="mt-4 max-w-md text-sm leading-6 text-stone-600">
-            An inquiry-first cross-border independent store built for product
-            display, buyer communication, quotation follow-up, and long-term
-            ecommerce operations.
+            A cross-border independent store where buyers can browse products,
+            ask questions, and confirm delivery and payment details before
+            checkout is ready.
           </p>
         </div>
 

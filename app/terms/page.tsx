@@ -6,20 +6,21 @@
       </p>
 
       <h1 className="mt-4 text-4xl font-bold tracking-tight text-stone-950">
-        This website is used for product display and inquiry communication.
+        This website is used for product browsing and order requests.
       </h1>
 
       <div className="mt-8 space-y-6 text-stone-700">
         <p>
-          Product information on this website is for reference and inquiry
-          purposes. Final pricing, availability, specifications, packaging,
-          shipping cost, and delivery time should be confirmed before order.
+          Product information on this website is for reference while online
+          checkout is being prepared. Final availability, price, packaging,
+          shipping cost, delivery time, and payment details should be confirmed
+          before order.
         </p>
 
         <p>
-          Submitting an inquiry does not create a binding purchase contract. A
-          formal order should be based on confirmed quotation, payment terms, and
-          agreement between both parties.
+          Submitting a request does not create a binding purchase contract. A
+          final order should be based on confirmed product details, shipping
+          estimate, payment terms, and buyer approval.
         </p>
 
         <p>

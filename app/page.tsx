@@ -5,34 +5,34 @@ const featuredProducts = [
     name: "Minimal Travel Organizer",
     slug: "minimal-travel-organizer",
     description:
-      "Compact travel storage product suitable for lightweight cross-border retail and bulk sourcing.",
+      "Compact travel storage product for everyday carry and international delivery questions.",
   },
   {
     name: "Everyday Canvas Tote",
     slug: "everyday-canvas-tote",
     description:
-      "Practical daily-use bag product with room for packaging, branding, and quantity-based quotation.",
+      "Practical daily-use bag for shopping, work, travel, and small order requests.",
   },
   {
     name: "Desk Cable Kit",
     slug: "desk-cable-kit",
     description:
-      "Small desktop accessory product suitable for simple product display and inquiry-based orders.",
+      "Small desktop accessory kit you can ask about before checkout is ready.",
   },
 ];
 
 const advantages = [
   {
-    title: "Inquiry-first workflow",
-    text: "Buyers can collect interested products into an inquiry cart and submit detailed requirements before quotation.",
+    title: "Request before checkout",
+    text: "Before online checkout is ready, you can request an order and ask about shipping details.",
   },
   {
-    title: "Flexible order discussion",
-    text: "MOQ, packaging, shipping method, destination country, and lead time can be confirmed during follow-up.",
+    title: "Small orders welcome",
+    text: "Ask about one item, a few pieces, or a larger quantity. We will confirm what is available.",
   },
   {
-    title: "Built for export communication",
-    text: "The site structure supports product display, buyer information collection, and admin-side inquiry tracking.",
+    title: "Shipping questions welcome",
+    text: "Share your country and product interest so delivery cost and timing can be discussed before payment.",
   },
 ];
 
@@ -40,22 +40,22 @@ const inquirySteps = [
   {
     step: "01",
     title: "Browse products",
-    text: "Review product pages, basic details, and potential sourcing options.",
+    text: "Review product pages, basic details, and price references.",
   },
   {
     step: "02",
     title: "Add to inquiry cart",
-    text: "Select products and quantities before submitting a request.",
+    text: "Save products you want to ask about before checkout is available.",
   },
   {
     step: "03",
-    title: "Submit requirements",
-    text: "Send name, email, company, country, message, and selected products.",
+    title: "Send order request",
+    text: "Send your name, email, country, message, and selected products.",
   },
   {
     step: "04",
-    title: "Receive follow-up",
-    text: "The inquiry is saved in the admin dashboard and sent by email for business follow-up.",
+    title: "Confirm next steps",
+    text: "We reply with availability, shipping estimate, final cost, and payment arrangement.",
   },
 ];
 
@@ -66,17 +66,17 @@ export default function Home() {
         <div className="grid items-center gap-12 py-16 md:grid-cols-[1.1fr_0.9fr]">
           <div>
             <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-stone-500">
-              Inquiry-based Cross-border Store
+              Cross-border Independent Store
             </p>
 
             <h1 className="max-w-3xl text-5xl font-bold leading-tight tracking-tight md:text-7xl">
-              A practical sourcing website for global buyers.
+              Shop cross-border products with help before checkout.
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
-              Explore products, add them to an inquiry cart, submit sourcing
-              requirements, and start quotation communication without a complex
-              checkout process.
+              Browse products, ask about shipping, and request an order before
+              online checkout is ready. Small orders and product questions are
+              welcome.
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -91,7 +91,7 @@ export default function Home() {
                 href="/inquiry"
                 className="rounded-full border border-stone-300 px-8 py-4 text-center text-sm font-semibold text-stone-950 hover:bg-white"
               >
-                Request a Quote
+                Request Order
               </Link>
             </div>
 
@@ -103,12 +103,12 @@ export default function Home() {
 
               <div className="rounded-2xl border border-stone-200 bg-white p-4">
                 <p className="font-semibold text-stone-950">Inquiry Cart</p>
-                <p className="mt-2">Collect products before RFQ.</p>
+                <p className="mt-2">Save items before requesting.</p>
               </div>
 
               <div className="rounded-2xl border border-stone-200 bg-white p-4">
-                <p className="font-semibold text-stone-950">Admin Follow-up</p>
-                <p className="mt-2">Track inquiry status later.</p>
+                <p className="font-semibold text-stone-950">Shipping Help</p>
+                <p className="mt-2">Ask before payment.</p>
               </div>
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function Home() {
             <div className="rounded-[1.5rem] bg-stone-100 p-6">
               <div className="rounded-[1.25rem] border border-white bg-white p-6 shadow-sm">
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-stone-500">
-                  Buyer Inquiry Preview
+                  Order Request Preview
                 </p>
 
                 <div className="mt-6 space-y-4">
@@ -126,27 +126,27 @@ export default function Home() {
                       Selected Products
                     </p>
                     <p className="mt-2 text-sm text-stone-600">
-                      Travel organizer × 200 units
+                      Travel organizer x 2 pieces
                     </p>
                     <p className="text-sm text-stone-600">
-                      Canvas tote × 500 units
+                      Canvas tote x 1 piece
                     </p>
                   </div>
 
                   <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
                     <p className="text-sm font-semibold text-stone-950">
-                      Buyer Requirement
+                      Buyer Question
                     </p>
                     <p className="mt-2 text-sm leading-6 text-stone-600">
-                      Please quote FOB price, packaging options, sample lead
-                      time, and shipping estimate to destination country.
+                      Can you confirm availability, shipping estimate, and
+                      payment details before I place the order?
                     </p>
                   </div>
 
                   <div className="rounded-2xl bg-stone-950 p-4 text-white">
-                    <p className="text-sm font-semibold">Inquiry submitted</p>
+                    <p className="text-sm font-semibold">Request submitted</p>
                     <p className="mt-2 text-sm text-stone-300">
-                      Saved to database and sent by email notification.
+                      Saved for review and sent by email notification.
                     </p>
                   </div>
                 </div>
@@ -158,10 +158,10 @@ export default function Home() {
         <section className="border-t border-stone-200 py-14">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-stone-500">
-              Why Choose Us
+              Why Shop Here
             </p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-              Designed for real inquiry communication.
+              Built for cross-border shopping while checkout is being prepared.
             </h2>
           </div>
 
@@ -186,7 +186,7 @@ export default function Home() {
               How It Works
             </p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-              From product browsing to quotation follow-up.
+              From product browsing to order request.
             </h2>
           </div>
 
@@ -251,16 +251,16 @@ export default function Home() {
 
         <section className="rounded-[2rem] bg-stone-950 px-6 py-12 text-center text-white md:px-12">
           <p className="text-sm font-semibold uppercase tracking-[0.25em] text-stone-400">
-            Ready for RFQ
+                Ready to order
           </p>
 
           <h2 className="mx-auto mt-4 max-w-3xl text-3xl font-bold tracking-tight md:text-5xl">
-            Send product requirements and start quotation discussion.
+            Ask a product question or request an order.
           </h2>
 
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-stone-300 md:text-base">
-            Add products to the inquiry cart or submit your sourcing request
-            directly. We will use your details for quotation and follow-up.
+            Add products to the inquiry cart or send a request directly. We
+            will confirm availability, delivery, final cost, and payment details.
           </p>
 
           <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
@@ -275,7 +275,7 @@ export default function Home() {
               href="/inquiry"
               className="rounded-full border border-stone-600 px-8 py-4 text-center text-sm font-semibold text-white hover:bg-stone-900"
             >
-              Submit Inquiry
+              Request Order
             </Link>
           </div>
         </section>
