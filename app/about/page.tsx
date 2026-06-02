@@ -27,8 +27,8 @@
         <div className="rounded-2xl border border-stone-200 bg-white p-6">
           <h2 className="font-semibold text-stone-950">Ask Before Buying</h2>
           <p className="mt-3 text-sm leading-6 text-stone-600">
-            Add products to the inquiry cart and ask about availability,
-            delivery, packaging, or payment before placing an order.
+            Add products to the request cart and ask about availability,
+            delivery, packaging, or payment before deciding whether to continue.
           </p>
         </div>
 

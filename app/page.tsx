@@ -44,7 +44,7 @@ const inquirySteps = [
   },
   {
     step: "02",
-    title: "Add to inquiry cart",
+    title: "Add to request cart",
     text: "Save tea products you want to ask about before checkout is available.",
   },
   {
@@ -102,7 +102,7 @@ export default function Home() {
               </div>
 
               <div className="rounded-2xl border border-stone-200 bg-white p-4">
-                <p className="font-semibold text-stone-950">Inquiry Cart</p>
+                <p className="font-semibold text-stone-950">Request Cart</p>
                 <p className="mt-2">Save items before requesting.</p>
               </div>
 
@@ -259,7 +259,7 @@ export default function Home() {
           </h2>
 
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-stone-300 md:text-base">
-            Add herbal tea products to the inquiry cart or send a request
+            Add herbal tea products to the request cart or send a request
             directly. We will confirm availability, delivery, final cost, and
             payment details.
           </p>

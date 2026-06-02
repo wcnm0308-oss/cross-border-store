@@ -32,12 +32,14 @@ export default function CartPage() {
   function handleClearCart() {
     window.localStorage.removeItem(cartKey);
     setCartItems([]);
+    window.dispatchEvent(new Event("cart-updated"));
   }
 
   function handleRemoveItem(id: string) {
     const nextCart = cartItems.filter((item) => item.id !== id);
     window.localStorage.setItem(cartKey, JSON.stringify(nextCart));
     setCartItems(nextCart);
+    window.dispatchEvent(new Event("cart-updated"));
   }
 
   return (
@@ -45,34 +47,35 @@ export default function CartPage() {
       <section className="mx-auto max-w-5xl">
         <section className="py-16">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-stone-500">
-            Inquiry Cart
+            Order Request
           </p>
 
           <h1 className="mt-4 text-5xl font-bold tracking-tight md:text-6xl">
-            Review the products you want to ask about.
+            Order Request Cart
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600">
-            Submit your request to confirm availability, shipping, and payment
-            details before checkout is ready.
+            Review the products you want to ask about. This is not a final
+            checkout. Final price, shipping, and payment details will be
+            confirmed after your request.
           </p>
         </section>
 
         {cartItems.length === 0 ? (
           <section className="rounded-[2rem] border border-stone-200 bg-white p-8 text-center shadow-sm">
             <h2 className="text-2xl font-bold">
-              Your inquiry cart is empty.
+              Your request cart is empty.
             </h2>
 
             <p className="mt-4 text-sm leading-6 text-stone-600">
-              Continue browsing products and add items you want to ask about.
+              Browse products to add items before sending an order request.
             </p>
 
             <Link
               href="/products"
               className="mt-8 inline-block rounded-full bg-stone-950 px-8 py-4 text-sm font-semibold text-white hover:bg-stone-800"
             >
-              Continue Browsing
+              Continue Shopping
             </Link>
           </section>
         ) : (
@@ -130,9 +133,33 @@ export default function CartPage() {
                 <span className="text-2xl font-bold">${totalPrice} USD</span>
               </div>
 
+              <p className="mt-3 text-xs leading-5 text-stone-500">
+                Price reference only. Does not include shipping, taxes, or
+                final payment arrangement.
+              </p>
+
+              <div className="mt-6 rounded-2xl bg-stone-50 p-5">
+                <h3 className="text-sm font-bold text-stone-950">
+                  What happens next?
+                </h3>
+
+                <ul className="mt-4 space-y-3 text-sm leading-6 text-stone-600">
+                  <li>We review your selected products.</li>
+                  <li>We confirm availability and shipping estimate.</li>
+                  <li>You decide whether to proceed with payment.</li>
+                </ul>
+              </div>
+
+              <Link
+                href="/products"
+                className="mt-6 block rounded-full border border-stone-300 px-8 py-4 text-center text-sm font-semibold hover:bg-stone-50"
+              >
+                Continue Shopping
+              </Link>
+
               <Link
                 href="/inquiry"
-                className="mt-8 block rounded-full bg-stone-950 px-8 py-4 text-center text-sm font-semibold text-white hover:bg-stone-800"
+                className="mt-3 block rounded-full bg-stone-950 px-8 py-4 text-center text-sm font-semibold text-white hover:bg-stone-800"
               >
                 Submit Order Request
               </Link>
@@ -142,13 +169,12 @@ export default function CartPage() {
                 onClick={handleClearCart}
                 className="mt-3 w-full rounded-full border border-stone-300 px-8 py-4 text-sm font-semibold hover:bg-stone-50"
               >
-                Clear Inquiry Cart
+                Clear Request Cart
               </button>
 
               <p className="mt-5 text-xs leading-5 text-stone-500">
-                This total is a price reference, not the final order amount.
-                We will confirm availability, shipping estimate, and payment
-                details before you place the order.
+                Your request will be reviewed by email before any payment is
+                arranged.
               </p>
             </aside>
           </section>

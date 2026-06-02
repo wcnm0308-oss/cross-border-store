@@ -28,7 +28,7 @@ export default function ProductsPage() {
             </p>
             <p className="mt-3 text-sm leading-6 text-stone-600">
               Availability, shipping estimate, final cost, and payment details
-              can be confirmed before you place an order.
+              can be confirmed before you decide whether to continue.
             </p>
           </div>
         </section>
@@ -135,7 +135,7 @@ export default function ProductsPage() {
               href="/cart"
               className="rounded-full border border-stone-600 px-8 py-4 text-center text-sm font-semibold text-white hover:bg-stone-900"
             >
-              Go to Inquiry Cart
+              Go to Request Cart
             </Link>
           </div>
         </section>

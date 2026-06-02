@@ -12,18 +12,18 @@ type ProductDetailPageProps = {
 const requestSteps = [
   {
     step: "01",
-    title: "Add product to inquiry cart",
+    title: "Add product to request cart",
     text: "Save this item with any other products you want to ask about.",
   },
   {
     step: "02",
-    title: "Tell us quantity and destination country",
-    text: "Share how many pieces you want and where the order should be shipped.",
+    title: "Submit order request",
+    text: "Share quantity, destination country, and any product or shipping questions.",
   },
   {
     step: "03",
-    title: "Confirm next steps",
-    text: "We confirm availability, shipping estimate, final cost, and payment arrangement.",
+    title: "Confirm price, shipping, and payment by email",
+    text: "We reply with availability, final cost, shipping estimate, and payment arrangement.",
   },
 ];
 
@@ -94,7 +94,8 @@ export default async function ProductDetailPage({
 
               <p className="mt-3 text-sm leading-6 text-stone-600">
                 {product.quoteNote} We can confirm availability, shipping
-                estimate, and payment details before you place the order.
+                estimate, and payment details before you decide whether to
+                continue.
               </p>
             </div>
 
@@ -110,7 +111,7 @@ export default async function ProductDetailPage({
             </div>
 
             <p className="mt-5 text-sm leading-6 text-stone-500">
-              Add this product to your inquiry cart to ask about availability,
+              Add this product to your request cart to ask about availability,
               delivery, packaging, and payment before online checkout is ready.
             </p>
           </div>
@@ -205,7 +206,7 @@ export default async function ProductDetailPage({
           </h2>
 
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-stone-300 md:text-base">
-            You can review selected products in the inquiry cart or ask about
+            You can review selected products in the request cart or ask about
             this product directly before payment.
           </p>
 
@@ -214,7 +215,7 @@ export default async function ProductDetailPage({
               href="/cart"
               className="rounded-full bg-white px-8 py-4 text-center text-sm font-semibold text-stone-950 hover:bg-stone-100"
             >
-              Go to Inquiry Cart
+              Go to Request Cart
             </Link>
 
             <Link

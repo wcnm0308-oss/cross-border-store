@@ -92,7 +92,7 @@ export default function Header() {
         href="/cart"
         className="shrink-0 rounded-full border border-stone-300 px-5 py-2 text-sm font-semibold hover:bg-white"
       >
-        Inquiry Cart
+        Request Cart
         {cartCount > 0 && (
           <span className="ml-2 rounded-full bg-stone-950 px-2 py-0.5 text-xs text-white">
             {cartCount}

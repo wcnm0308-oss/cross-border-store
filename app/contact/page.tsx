@@ -125,19 +125,20 @@ export default function ContactPage() {
             </p>
 
             <h1 className="mt-4 text-5xl font-bold tracking-tight md:text-6xl">
-              Ask about a product or request an order.
+              Submit Order Request
             </h1>
 
             <p className="mt-6 text-lg leading-8 text-stone-600">
-              Before online checkout is ready, you can ask about availability,
-              international shipping, final cost, and payment details.
+              Ask about product availability, shipping, final cost, and payment
+              arrangement before checkout is ready.
             </p>
 
             <div className="mt-8 rounded-3xl bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold">Ask Before Buying</h2>
+              <h2 className="text-lg font-bold">Before you submit</h2>
               <p className="mt-3 text-sm leading-6 text-stone-600">
-                Share the product you like, your country, expected quantity, and
-                any delivery questions. We will reply by email before payment.
+                This is a request, not a paid order. We will confirm
+                availability, final cost, shipping, and payment details by
+                email.
               </p>
             </div>
           </div>
@@ -171,7 +172,7 @@ export default function ContactPage() {
 
               <label className="grid gap-2">
                 <span className="text-sm font-semibold">
-                  Company Name Optional
+                  Company Name (optional)
                 </span>
                 <input
                   name="companyName"
@@ -183,7 +184,9 @@ export default function ContactPage() {
 
               <div className="grid gap-5 md:grid-cols-2">
                 <label className="grid gap-2">
-                  <span className="text-sm font-semibold">Phone Optional</span>
+                  <span className="text-sm font-semibold">
+                    Phone (optional)
+                  </span>
                   <input
                     name="phone"
                     type="text"
@@ -194,7 +197,7 @@ export default function ContactPage() {
 
                 <label className="grid gap-2">
                   <span className="text-sm font-semibold">
-                    WhatsApp Optional
+                    WhatsApp (optional)
                   </span>
                   <input
                     name="whatsapp"
@@ -207,7 +210,7 @@ export default function ContactPage() {
 
               <label className="grid gap-2">
                 <span className="text-sm font-semibold">
-                  Destination Country
+                  Country
                 </span>
                 <input
                   name="country"
@@ -220,7 +223,7 @@ export default function ContactPage() {
 
               <label className="grid gap-2">
                 <span className="text-sm font-semibold">
-                  Interested Product
+                  Interested Products
                 </span>
                 <input
                   name="interestedProduct"
@@ -232,7 +235,7 @@ export default function ContactPage() {
 
               <label className="grid gap-2">
                 <span className="text-sm font-semibold">
-                  Estimated Quantity
+                  Expected Quantity (optional)
                 </span>
                 <input
                   name="quantity"
@@ -244,7 +247,7 @@ export default function ContactPage() {
 
               <label className="grid gap-2">
                 <span className="text-sm font-semibold">
-                  Order Questions Optional
+                  Order Questions (optional)
                 </span>
                 <textarea
                   name="requirements"
@@ -259,7 +262,7 @@ export default function ContactPage() {
                 <textarea
                   name="message"
                   required
-                  placeholder="Tell us what you want to order and what you need to confirm before payment."
+                  placeholder="Tell us your interested products, quantity, destination country, shipping question, or gift packaging question."
                   rows={5}
                   className="resize-none rounded-2xl border border-stone-200 px-4 py-3 outline-none focus:border-stone-950"
                 />
@@ -270,13 +273,15 @@ export default function ContactPage() {
                 disabled={status === "submitting"}
                 className="rounded-full bg-stone-950 px-8 py-4 text-sm font-semibold text-white hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-400"
               >
-                {status === "submitting" ? "Submitting..." : "Submit Request"}
+                {status === "submitting"
+                  ? "Submitting..."
+                  : "Submit Order Request"}
               </button>
 
               {status === "success" && (
                 <div className="rounded-2xl bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
-                  Request submitted successfully. We will review your message
-                  and contact you by email.
+                  Your order request has been sent. We will review your request
+                  and reply by email.
                 </div>
               )}
 
@@ -287,7 +292,7 @@ export default function ContactPage() {
               )}
 
               <p className="text-xs leading-5 text-stone-500">
-                Your request will be saved for reply. If your inquiry cart
+                Your request will be saved for reply. If your request cart
                 contains products, the selected items and price reference will
                 also be submitted together.
               </p>
