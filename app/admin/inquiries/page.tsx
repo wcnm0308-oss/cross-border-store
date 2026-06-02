@@ -88,12 +88,45 @@ function formatDate(value: string | null) {
 function formatCartItems(value: unknown) {
   if (!value) return "-";
 
+  let cartItems = value;
+
   if (typeof value === "string") {
-    return value;
+    try {
+      cartItems = JSON.parse(value);
+    } catch {
+      return value;
+    }
+  }
+
+  if (Array.isArray(cartItems)) {
+    const lines = cartItems
+      .map((item) => {
+        if (!item || typeof item !== "object") {
+          return stringifySearchValue(item) || "";
+        }
+
+        const product = item as Record<string, unknown>;
+        const productName =
+          stringifySearchValue(product.name) ||
+          stringifySearchValue(product.product_name) ||
+          stringifySearchValue(product.title) ||
+          stringifySearchValue(product.slug) ||
+          stringifySearchValue(product.id) ||
+          "Unknown product";
+        const quantity =
+          stringifySearchValue(product.quantity) ||
+          stringifySearchValue(product.qty) ||
+          "1";
+
+        return `${productName} × ${quantity}`;
+      })
+      .filter(Boolean);
+
+    return lines.length ? lines.join("\n") : "-";
   }
 
   try {
-    return JSON.stringify(value, null, 2);
+    return JSON.stringify(cartItems, null, 2);
   } catch {
     return "-";
   }
@@ -331,10 +364,10 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
       <main className="min-h-screen bg-slate-50 px-6 py-10">
         <div className="mx-auto max-w-3xl rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
           <h1 className="text-2xl font-semibold text-red-700">
-            管理员密码未配置
+            Admin password is not configured
           </h1>
           <p className="mt-3 text-sm text-slate-600">
-            请先把 ADMIN_PASSWORD 添加到你的环境变量里。
+            Please add ADMIN_PASSWORD to your environment variables.
           </p>
         </div>
       </main>
@@ -347,10 +380,11 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
         <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm font-medium text-slate-500">Admin</p>
           <h1 className="mt-2 text-2xl font-semibold text-slate-900">
-            询盘管理后台
+            Order Request Admin
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            输入管理员密码后，可以查看和管理客户询盘记录。
+            Enter the admin password to view and manage customer order
+            requests.
           </p>
 
           <form className="mt-6 space-y-4" method="get">
@@ -359,7 +393,7 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
                 htmlFor="key"
                 className="block text-sm font-medium text-slate-700"
               >
-                管理员密码
+                Admin Password
               </label>
               <input
                 id="key"
@@ -367,7 +401,7 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
                 type="password"
                 required
                 className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-900"
-                placeholder="输入密码"
+                placeholder="Enter password"
               />
             </div>
 
@@ -375,7 +409,7 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
               type="submit"
               className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
             >
-              进入后台
+              Enter Admin
             </button>
           </form>
 
@@ -395,10 +429,11 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
       <main className="min-h-screen bg-slate-50 px-6 py-10">
         <div className="mx-auto max-w-3xl rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
           <h1 className="text-2xl font-semibold text-red-700">
-            Supabase 环境变量缺失
+            Supabase environment variables are missing
           </h1>
           <p className="mt-3 text-sm text-slate-600">
-            请检查 NEXT_PUBLIC_SUPABASE_URL 和 SUPABASE_SERVICE_ROLE_KEY。
+            Please check NEXT_PUBLIC_SUPABASE_URL and
+            SUPABASE_SERVICE_ROLE_KEY.
           </p>
         </div>
       </main>
@@ -440,16 +475,16 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
           <div>
             <p className="text-sm font-medium text-slate-500">Admin</p>
             <h1 className="mt-2 text-3xl font-semibold text-slate-900">
-              Customer Inquiries
+              Order Requests
             </h1>
             <p className="mt-3 text-sm text-slate-600">
-              查看客户询盘，并管理每条询盘的跟进状态。
+              View customer order requests and manage follow-up status.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="rounded-full bg-white px-4 py-2 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200">
-              Showing {inquiries.length} inquiries
+              Showing {inquiries.length} requests
             </div>
             <Link
               href="/admin/logout"
@@ -517,7 +552,7 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
                 <option value="">All statuses</option>
                 {INQUIRY_STATUS_OPTIONS.map((status) => (
                   <option key={status.value} value={status.value}>
-                    {status.value}
+                    {status.label}
                   </option>
                 ))}
               </select>
@@ -558,7 +593,7 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
 
         {statusError === "invalid" ? (
           <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
-            Status was not saved because it is not a supported pipeline status.
+            Status was not saved because it is not a supported request status.
           </div>
         ) : null}
 
@@ -570,20 +605,22 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
 
         {error ? (
           <div className="rounded-2xl border border-red-200 bg-white p-6 text-red-700 shadow-sm">
-            <h2 className="text-lg font-semibold">读取询盘失败</h2>
+            <h2 className="text-lg font-semibold">
+              Failed to load order requests
+            </h2>
             <p className="mt-2 text-sm">{error.message}</p>
           </div>
         ) : inquiries.length === 0 ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
             <h2 className="text-xl font-semibold text-slate-900">
               {hasActiveFilters
-                ? "No inquiries match the current filters."
-                : "No inquiries yet"}
+                ? "No order requests match the current filters."
+                : "No order requests yet"}
             </h2>
             <p className="mt-2 text-sm text-slate-600">
               {hasActiveFilters
                 ? "Try adjusting the keyword, status, or date range."
-                : "Customer inquiries will appear here after submission."}
+                : "Customer order requests will appear here after submission."}
             </p>
           </div>
         ) : (
@@ -608,10 +645,10 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
                       Product
                     </th>
                     <th className="px-4 py-3 text-left font-semibold text-slate-700">
-                      Cart
+                      Request Cart
                     </th>
                     <th className="px-4 py-3 text-left font-semibold text-slate-700">
-                      Total
+                      Price Ref.
                     </th>
                     <th className="px-4 py-3 text-left font-semibold text-slate-700">
                       Status
@@ -702,7 +739,7 @@ export default async function AdminInquiriesPage({ searchParams }: PageProps) {
                           >
                             {INQUIRY_STATUS_OPTIONS.map((status) => (
                               <option key={status.value} value={status.value}>
-                                {status.value}
+                                {status.label}
                               </option>
                             ))}
                           </select>
