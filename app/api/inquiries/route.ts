@@ -7,6 +7,7 @@ type CartItem = {
   slug?: string;
   name?: string;
   price?: number;
+  currency?: string;
   quantity?: number;
 };
 
@@ -43,16 +44,7 @@ function formatCartItems(cartItems: CartItem[]) {
     .join("\n");
 }
 
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-async function sendInquiryNotification(params: {
+type InquiryEmailParams = {
   name: string;
   email: string;
   companyName: string | null;
@@ -68,18 +60,101 @@ async function sendInquiryNotification(params: {
   cartTotal: number;
   inquiryId?: string;
   createdAt?: string;
-}) {
+};
+
+function getCartItemDetails(item: CartItem) {
+  const name = item.name || "Unknown product";
+  const slugOrId = item.slug || item.id || "No slug or id submitted";
+  const price = typeof item.price === "number" ? item.price : 0;
+  const currency = item.currency || "USD";
+  const quantity = typeof item.quantity === "number" ? item.quantity : 1;
+
+  return {
+    name,
+    slugOrId,
+    price,
+    currency,
+    quantity,
+  };
+}
+
+function formatCartItemsForText(cartItems: CartItem[]) {
+  if (cartItems.length === 0) {
+    return "No cart items submitted.";
+  }
+
+  return cartItems
+    .map((item, index) => {
+      const details = getCartItemDetails(item);
+
+      return `${index + 1}. ${details.name} (${details.slugOrId}) x ${
+        details.quantity
+      } - ${details.price.toFixed(2)} ${
+        details.currency
+      } price reference`;
+    })
+    .join("\n");
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function renderCartItemsHtml(cartItems: CartItem[]) {
+  if (cartItems.length === 0) {
+    return "<p>No selected cart products were submitted.</p>";
+  }
+
+  const rows = cartItems
+    .map((item) => {
+      const details = getCartItemDetails(item);
+      const safeName = escapeHtml(details.name);
+      const safeSlugOrId = escapeHtml(details.slugOrId);
+      const safeCurrency = escapeHtml(details.currency);
+
+      return `
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #e7e5e4;">${safeName}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #e7e5e4;">${safeSlugOrId}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #e7e5e4;">${details.quantity}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #e7e5e4;">${details.price.toFixed(
+            2
+          )} ${safeCurrency}</td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  return `
+    <table style="border-collapse: collapse; width: 100%; margin-top: 8px;">
+      <thead>
+        <tr>
+          <th align="left" style="padding: 8px; border-bottom: 1px solid #d6d3d1;">Product name</th>
+          <th align="left" style="padding: 8px; border-bottom: 1px solid #d6d3d1;">Slug / ID</th>
+          <th align="left" style="padding: 8px; border-bottom: 1px solid #d6d3d1;">Quantity</th>
+          <th align="left" style="padding: 8px; border-bottom: 1px solid #d6d3d1;">Price reference</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+async function sendAdminNotification(params: InquiryEmailParams) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const notifyEmail = process.env.INQUIRY_NOTIFY_EMAIL;
 
   if (!resendApiKey || !notifyEmail) {
-    console.warn("Resend environment variables are missing.");
+    console.warn("Resend admin notification environment variables are missing.");
     return;
   }
 
   const resend = new Resend(resendApiKey);
-
-  const cartText = formatCartItems(params.cartItems);
 
   const safeName = escapeHtml(params.name);
   const safeEmail = escapeHtml(params.email);
@@ -96,8 +171,8 @@ async function sendInquiryNotification(params: {
   );
   const safeMessage = escapeHtml(params.message || "No message submitted.");
   const safeSourcePage = escapeHtml(params.sourcePage);
-  const safeCartText = escapeHtml(cartText);
   const safeCreatedAt = escapeHtml(params.createdAt || new Date().toISOString());
+  const cartItemsHtml = renderCartItemsHtml(params.cartItems);
   const detailPath = params.inquiryId
     ? `/admin/inquiries/${encodeURIComponent(params.inquiryId)}`
     : "/admin/inquiries";
@@ -113,39 +188,103 @@ async function sendInquiryNotification(params: {
   await resend.emails.send({
     from: "Cross Border Store <onboarding@resend.dev>",
     to: notifyEmail,
-    subject: `New inquiry from ${params.name}`,
+    subject: `New order request received from ${params.name}`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
-        <h2>New Customer Inquiry</h2>
+        <h2>New order request received</h2>
 
-        <p>A new inquiry has been submitted from your cross-border store.</p>
+        <p>A customer submitted an order request from your cross-border store.</p>
 
-        <h3>Customer Info</h3>
+        <h3>Customer information</h3>
         <p><strong>Name:</strong> ${safeName}</p>
         <p><strong>Email:</strong> ${safeEmail}</p>
+        <p><strong>Country:</strong> ${safeCountry}</p>
         <p><strong>Company:</strong> ${safeCompanyName}</p>
         <p><strong>Phone:</strong> ${safePhone}</p>
         <p><strong>WhatsApp:</strong> ${safeWhatsapp}</p>
-        <p><strong>Destination Country:</strong> ${safeCountry}</p>
 
-        <h3>Inquiry Details</h3>
-        <p><strong>Interested Product:</strong> ${safeInterestedProduct}</p>
-        <p><strong>Estimated Quantity:</strong> ${safeQuantity}</p>
+        <h3>Selected products</h3>
+        ${cartItemsHtml}
+        <p><strong>Interested product field:</strong> ${safeInterestedProduct}</p>
+        <p><strong>Expected quantity field:</strong> ${safeQuantity}</p>
+
+        <h3>Estimated product total</h3>
+        <p><strong>Price reference only:</strong> $${params.cartTotal.toFixed(
+          2
+        )} USD</p>
+        <p>This does not include shipping, taxes, or final payment arrangement.</p>
+
+        <h3>Customer message / requirements</h3>
         <p><strong>Requirements:</strong></p>
         <p style="white-space: pre-line;">${safeRequirements}</p>
         <p><strong>Message:</strong></p>
         <p style="white-space: pre-line;">${safeMessage}</p>
 
-        <h3>Cart Info</h3>
-        <p><strong>Estimated Cart Total:</strong> $${params.cartTotal.toFixed(
-          2
-        )}</p>
-        <pre style="white-space: pre-wrap; background: #f5f5f4; padding: 12px; border-radius: 12px;">${safeCartText}</pre>
-
         <h3>Source</h3>
         <p><strong>Source Page:</strong> ${safeSourcePage}</p>
         <p><strong>Admin Detail:</strong> ${safeAdminDetailLink}</p>
         <p><strong>Submitted At:</strong> ${safeCreatedAt}</p>
+
+        <h3>Reminder</h3>
+        <p><strong>This is not a paid order.</strong></p>
+        <p>Confirm availability, shipping estimate, final cost, and payment details before asking the customer to pay.</p>
+      </div>
+    `,
+  });
+}
+
+async function sendCustomerConfirmation(params: InquiryEmailParams) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+
+  if (!resendApiKey) {
+    console.warn("Resend customer confirmation environment variable is missing.");
+    return;
+  }
+
+  const resend = new Resend(resendApiKey);
+
+  const safeName = escapeHtml(params.name);
+  const safeCountry = escapeHtml(params.country || "Not specified");
+  const safeInterestedProduct = escapeHtml(
+    params.interestedProduct || "Not specified"
+  );
+  const safeMessage = escapeHtml(params.message || "No message submitted.");
+  const safeRequirements = escapeHtml(
+    params.requirements || "No additional questions submitted."
+  );
+  const safeCartText = escapeHtml(formatCartItemsForText(params.cartItems));
+
+  await resend.emails.send({
+    from: "Cross Border Store <onboarding@resend.dev>",
+    to: params.email,
+    subject: "We received your order request",
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
+        <h2>We received your order request</h2>
+
+        <p>Hi ${safeName},</p>
+
+        <p>Thank you for your order request.</p>
+
+        <p><strong>This is not a paid order yet.</strong> You do not need to pay now.</p>
+
+        <p>We will review product availability, shipping estimate, final cost, and payment details. We will reply by email.</p>
+
+        <h3>Your request summary</h3>
+        <p><strong>Country:</strong> ${safeCountry}</p>
+        <p><strong>Products mentioned:</strong> ${safeInterestedProduct}</p>
+
+        <h3>Selected products</h3>
+        <pre style="white-space: pre-wrap; background: #f5f5f4; padding: 12px; border-radius: 12px;">${safeCartText}</pre>
+        <p>This product total is a price reference only. It does not include shipping, taxes, or final payment arrangement.</p>
+
+        <h3>Your message</h3>
+        <p style="white-space: pre-line;">${safeMessage}</p>
+
+        <h3>Additional questions</h3>
+        <p style="white-space: pre-line;">${safeRequirements}</p>
+
+        <p>After we review the details, you can decide whether to continue with payment.</p>
       </div>
     `,
   });
@@ -264,7 +403,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      await sendInquiryNotification({
+      await sendAdminNotification({
         name,
         email,
         companyName,
@@ -282,13 +421,35 @@ export async function POST(request: NextRequest) {
         createdAt: data.created_at,
       });
     } catch (emailError) {
-      console.error("Failed to send inquiry notification email:", emailError);
+      console.error("Failed to send admin notification email:", emailError);
+    }
+
+    try {
+      await sendCustomerConfirmation({
+        name,
+        email,
+        companyName,
+        phone,
+        whatsapp,
+        interestedProduct,
+        message,
+        requirements,
+        country,
+        quantity,
+        sourcePage,
+        cartItems,
+        cartTotal,
+        inquiryId: data.id,
+        createdAt: data.created_at,
+      });
+    } catch (emailError) {
+      console.error("Failed to send customer confirmation email:", emailError);
     }
 
     return NextResponse.json(
       {
         success: true,
-        message: "Inquiry submitted successfully.",
+        message: "Order request submitted successfully.",
         inquiry: data,
       },
       { status: 201 }
