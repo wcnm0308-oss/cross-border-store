@@ -90,6 +90,44 @@ function getItemValue(item: Record<string, unknown>, keys: string[]) {
   return formatText(getFirstValue(item, keys));
 }
 
+function renderCartItem(item: Record<string, unknown>, index: number) {
+  const productName = getItemValue(item, [
+    "name",
+    "product_name",
+    "title",
+    "slug",
+    "id",
+  ]);
+  const sku = getItemValue(item, ["slug", "id", "sku"]);
+  const quantity = getItemValue(item, ["quantity", "qty"]);
+  const price = getItemValue(item, ["price", "unit_price"]);
+  const currency = getItemValue(item, ["currency"]);
+  const priceLabel =
+    price === "-" ? "-" : currency === "-" ? price : `${price} ${currency}`;
+
+  return (
+    <div
+      key={index}
+      className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+    >
+      <div className="flex flex-col gap-3 text-sm md:flex-row md:items-start md:justify-between">
+        <div>
+          <p className="font-semibold text-slate-900">{productName}</p>
+          <p className="mt-1 text-xs text-slate-500">SKU: {sku}</p>
+        </div>
+        <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+          <span className="rounded-full bg-white px-3 py-1 ring-1 ring-slate-200">
+            Qty: {quantity}
+          </span>
+          <span className="rounded-full bg-white px-3 py-1 ring-1 ring-slate-200">
+            Price: {priceLabel}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function renderStructuredValue(value: unknown) {
   if (value === null || value === undefined || value === "") {
     return <p className="text-sm text-slate-500">-</p>;
@@ -103,31 +141,7 @@ function renderStructuredValue(value: unknown) {
     if (value.every(isRecord)) {
       return (
         <div className="space-y-3">
-          {value.map((item, index) => (
-            <div
-              key={index}
-              className="rounded-xl border border-slate-200 bg-slate-50 p-4"
-            >
-              <div className="flex flex-col gap-2 text-sm md:flex-row md:items-start md:justify-between">
-                <div>
-                  <p className="font-semibold text-slate-900">
-                    {getItemValue(item, ["name", "product_name", "title"])}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    SKU: {getItemValue(item, ["sku", "id", "slug"])}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2 text-xs text-slate-600">
-                  <span className="rounded-full bg-white px-3 py-1 ring-1 ring-slate-200">
-                    Qty: {getItemValue(item, ["quantity", "qty"])}
-                  </span>
-                  <span className="rounded-full bg-white px-3 py-1 ring-1 ring-slate-200">
-                    Price: {getItemValue(item, ["price", "unit_price"])}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
+          {value.map((item, index) => renderCartItem(item, index))}
         </div>
       );
     }
@@ -175,10 +189,10 @@ function AdminPasswordMissing() {
     <main className="min-h-screen bg-slate-50 px-6 py-10">
       <div className="mx-auto max-w-3xl rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-semibold text-red-700">
-          绠＄悊鍛樺瘑鐮佹湭閰嶇疆
+          Admin password is not configured
         </h1>
         <p className="mt-3 text-sm text-slate-600">
-          璇峰厛鎶?ADMIN_PASSWORD 娣诲姞鍒颁綘鐨勭幆澧冨彉閲忛噷銆?
+          Please add ADMIN_PASSWORD to your environment variables.
         </p>
       </div>
     </main>
@@ -191,16 +205,16 @@ function UnauthorizedAdmin() {
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <p className="text-sm font-medium text-slate-500">Admin</p>
         <h1 className="mt-2 text-2xl font-semibold text-slate-900">
-          璇㈢洏绠＄悊鍚庡彴
+          Order Request Admin
         </h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          杈撳叆绠＄悊鍛樺瘑鐮佸悗锛屽彲浠ユ煡鐪嬪拰绠＄悊瀹㈡埛璇㈢洏璁板綍銆?
+          Enter the admin password to view and manage customer order requests.
         </p>
 
         <form className="mt-6 space-y-4" method="get">
           <div>
             <label htmlFor="key" className="block text-sm font-medium text-slate-700">
-              绠＄悊鍛樺瘑鐮?
+              Admin Password
             </label>
             <input
               id="key"
@@ -208,7 +222,7 @@ function UnauthorizedAdmin() {
               type="password"
               required
               className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-900"
-              placeholder="杈撳叆瀵嗙爜"
+              placeholder="Enter password"
             />
           </div>
 
@@ -216,7 +230,7 @@ function UnauthorizedAdmin() {
             type="submit"
             className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
           >
-            杩涘叆鍚庡彴
+            Enter Admin
           </button>
         </form>
 
@@ -236,10 +250,10 @@ function SupabaseConfigMissing() {
     <main className="min-h-screen bg-slate-50 px-6 py-10">
       <div className="mx-auto max-w-3xl rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-semibold text-red-700">
-          Supabase 鐜鍙橀噺缂哄け
+          Supabase environment variables are missing
         </h1>
         <p className="mt-3 text-sm text-slate-600">
-          璇锋鏌?NEXT_PUBLIC_SUPABASE_URL 鍜?SUPABASE_SERVICE_ROLE_KEY銆?
+          Please check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.
         </p>
       </div>
     </main>
@@ -447,8 +461,8 @@ export default async function InquiryDetailPage({
     return (
       <MessageCard
         backHref={backHref}
-        title="Unable to load inquiry"
-        message={error.message || "The inquiry could not be loaded."}
+        title="Unable to load order request"
+        message={error.message || "The order request could not be loaded."}
       />
     );
   }
@@ -459,19 +473,24 @@ export default async function InquiryDetailPage({
     return (
       <MessageCard
         backHref={backHref}
-        title="Inquiry not found"
-        message="No inquiry record was found for this ID."
+        title="Order request not found"
+        message="No order request record was found for this ID."
       />
     );
   }
 
   const status = getFirstValue(inquiry, ["status"]);
   const products = getFirstValue(inquiry, [
+    "request_cart",
+    "request_cart_items",
+    "cart",
     "products",
     "items",
     "cart_items",
+    "order_items",
     "inquiry_items",
     "interested_product",
+    "interested_products",
   ]);
   const message = getFirstValue(inquiry, ["message", "requirements", "note"]);
   const { data: notesData, error: notesQueryError } = await supabase
@@ -504,10 +523,10 @@ export default async function InquiryDetailPage({
           <div>
             <p className="text-sm font-medium text-slate-500">Admin</p>
             <h1 className="mt-2 text-3xl font-semibold text-slate-900">
-              Inquiry Details
+              Order Request Details
             </h1>
             <p className="mt-3 break-all text-sm text-slate-600">
-              Inquiry ID: {formatText(getFirstValue(inquiry, ["id"]))}
+              Request ID: {formatText(getFirstValue(inquiry, ["id"]))}
             </p>
           </div>
 
@@ -525,25 +544,25 @@ export default async function InquiryDetailPage({
             <dl>
               <InfoRow label="Customer Name" value={getFirstValue(inquiry, ["customer_name", "name"])} />
               <InfoRow label="Email" value={getFirstValue(inquiry, ["email", "customer_email"])} />
+              <InfoRow label="Country" value={getFirstValue(inquiry, ["country", "destination_country"])} />
               <InfoRow label="Company" value={getFirstValue(inquiry, ["company", "company_name"])} />
               <InfoRow label="Phone / WhatsApp" value={getFirstValue(inquiry, ["phone", "whatsapp", "WhatsApp"])} />
-              <InfoRow label="Country" value={getFirstValue(inquiry, ["country", "destination_country"])} />
               <InfoRow label="Estimated Quantity" value={getFirstValue(inquiry, ["quantity", "estimated_quantity"])} />
             </dl>
           </InfoCard>
 
-          <InfoCard title="Inquiry Items / Products">
+          <InfoCard title="Request Cart / Products">
             {renderStructuredValue(products)}
           </InfoCard>
 
-          <InfoCard title="Message / Requirements">
+          <InfoCard title="Customer Message">
             {renderStructuredValue(message)}
           </InfoCard>
 
-          <InfoCard title="Internal Notes">
+          <InfoCard title="Internal Follow-up Notes">
             {notesUnavailable ? (
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
-                Internal notes are not available until the database migration is
+                Follow-up notes are not available until the database migration is
                 applied.
               </div>
             ) : (
@@ -574,7 +593,7 @@ export default async function InquiryDetailPage({
                   </div>
                 ) : (
                   <p className="text-sm text-slate-500">
-                    No internal notes yet.
+                    No follow-up notes yet.
                   </p>
                 )}
 
@@ -591,14 +610,14 @@ export default async function InquiryDetailPage({
 
                   <label className="grid gap-2">
                     <span className="text-sm font-medium text-slate-700">
-                      Add Note
+                      Add Follow-up Note
                     </span>
                     <textarea
                       name="note"
                       required
                       rows={4}
                       className="resize-none rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-900"
-                      placeholder="Add an internal follow-up note..."
+                      placeholder="Record reply status, shipping estimate, quoted price, customer feedback, or next follow-up step..."
                     />
                   </label>
 
@@ -606,7 +625,7 @@ export default async function InquiryDetailPage({
                     type="submit"
                     className="rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
                   >
-                    Save Note
+                    Save Follow-up Note
                   </button>
                 </form>
               </div>
@@ -615,7 +634,7 @@ export default async function InquiryDetailPage({
 
           <InfoCard title="Status & Timeline">
             <dl>
-              <InfoRow label="Status" value={getInquiryStatusLabel(status)} />
+              <InfoRow label="Current Status" value={getInquiryStatusLabel(status)} />
               <InfoRow label="Created At" value={formatDate(getFirstValue(inquiry, ["created_at"]))} />
               <InfoRow label="Updated At" value={formatDate(getFirstValue(inquiry, ["updated_at"]))} />
             </dl>
