@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 
 type CartItem = {
   id?: string;
@@ -60,10 +60,16 @@ function calculateCartTotal(cartItems: CartItem[]) {
 export default function ContactPage() {
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const isSubmittingRef = useRef(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (isSubmittingRef.current) {
+      return;
+    }
+
+    isSubmittingRef.current = true;
     setStatus("submitting");
     setErrorMessage("");
 
@@ -84,6 +90,7 @@ export default function ContactPage() {
       quantity: String(formData.get("quantity") || "").trim(),
       requirements: String(formData.get("requirements") || "").trim(),
       message: String(formData.get("message") || "").trim(),
+      website: String(formData.get("website") || "").trim(),
       sourcePage: window.location.pathname,
       cartItems,
       cartTotal,
@@ -110,8 +117,9 @@ export default function ContactPage() {
       console.error("Inquiry form submit error:", error);
       setStatus("error");
       setErrorMessage(
-        "Submit failed. Please check your network and try again."
+        "We could not send your order request. Please try again or contact us by email."
       );
+      isSubmittingRef.current = false;
     }
   }
 
@@ -148,6 +156,15 @@ export default function ContactPage() {
             className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-sm"
           >
             <div className="grid gap-5">
+              <input
+                name="website"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                className="hidden"
+              />
+
               <label className="grid gap-2">
                 <span className="text-sm font-semibold">Name</span>
                 <input
@@ -270,23 +287,30 @@ export default function ContactPage() {
 
               <button
                 type="submit"
-                disabled={status === "submitting"}
-                className="rounded-full bg-stone-950 px-8 py-4 text-sm font-semibold text-white hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-400"
+                disabled={status === "submitting" || status === "success"}
+                className="w-full rounded-full bg-stone-950 px-8 py-4 text-sm font-semibold text-white hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-400 sm:w-auto"
               >
                 {status === "submitting"
-                  ? "Submitting..."
-                  : "Submit Order Request"}
+                  ? "Sending request..."
+                  : status === "success"
+                    ? "Request sent"
+                    : "Submit Order Request"}
               </button>
 
               {status === "success" && (
-                <div className="rounded-2xl bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
-                  Your order request has been sent. We will review your request
-                  and reply by email.
+                <div
+                  aria-live="polite"
+                  className="rounded-2xl bg-green-50 px-4 py-3 text-sm font-semibold leading-6 text-green-700"
+                >
+                  Your order request has been sent. We will reply by email.
                 </div>
               )}
 
               {status === "error" && (
-                <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                <div
+                  aria-live="polite"
+                  className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold leading-6 text-red-700"
+                >
                   {errorMessage}
                 </div>
               )}

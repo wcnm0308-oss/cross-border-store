@@ -26,6 +26,8 @@ type InquiryRequestBody = {
   sourcePage?: string;
   cartItems?: CartItem[];
   cartTotal?: number;
+  website?: string;
+  honeypot?: string;
 };
 
 function formatCartItems(cartItems: CartItem[]) {
@@ -292,6 +294,13 @@ async function sendCustomerConfirmation(params: InquiryEmailParams) {
 
 export async function POST(request: NextRequest) {
   try {
+    const body = (await request.json()) as InquiryRequestBody;
+    const honeypotValue = `${body.website || ""}${body.honeypot || ""}`.trim();
+
+    if (honeypotValue) {
+      return NextResponse.json({ ok: true, success: true });
+    }
+
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -299,13 +308,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: "Supabase environment variables are missing.",
+          message: "Order request service is temporarily unavailable.",
         },
         { status: 500 }
       );
     }
-
-    const body = (await request.json()) as InquiryRequestBody;
 
     const name = body.name?.trim();
     const email = body.email?.trim();
