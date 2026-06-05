@@ -27,6 +27,11 @@ export default function Footer() {
             ask questions, and confirm delivery and payment details before
             checkout is ready.
           </p>
+          <div className="mt-5 grid gap-2 text-sm text-stone-600">
+            <p>Request order before checkout.</p>
+            <p>Email confirmation after submission.</p>
+            <p>Final cost and shipping confirmed by email.</p>
+          </div>
         </div>
 
         <div>

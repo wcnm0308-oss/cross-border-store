@@ -7,7 +7,12 @@ const faqs = [
   {
     question: "Why do I need to submit a request instead of checkout now?",
     answer:
-      "Online checkout is not ready yet. You can submit a request so we can confirm availability, delivery, final cost, and payment details before you order.",
+      "Online checkout is not ready yet. You can submit a request so we can confirm availability, delivery, final cost, and payment details before you decide whether to continue.",
+  },
+  {
+    question: "Do I need to pay when submitting an order request?",
+    answer:
+      "No. Submitting an order request is not a paid order. No payment is required before we confirm the details by email.",
   },
   {
     question: "Can I ask about shipping before payment?",
@@ -23,6 +28,11 @@ const faqs = [
     question: "How will I receive the final price?",
     answer:
       "After you submit a request, we review the products, quantity, destination country, and shipping needs, then reply by email with the next step.",
+  },
+  {
+    question: "Will I receive a confirmation email?",
+    answer:
+      "Yes. After submission, we send a confirmation email with your request summary, then follow up by email about availability, shipping, final cost, and payment details.",
   },
 ];
 

@@ -14,6 +14,11 @@
         questions, and confirm international delivery and payment details before
         online checkout is ready.
       </p>
+      <p className="mt-4 text-base leading-7 text-stone-600">
+        Submit an order request first, receive confirmation by email, and review
+        availability, shipping estimate, final cost, and payment details before
+        deciding whether to continue.
+      </p>
 
       <div className="mt-10 grid gap-6 md:grid-cols-3">
         <div className="rounded-2xl border border-stone-200 bg-white p-6">
@@ -33,10 +38,10 @@
         </div>
 
         <div className="rounded-2xl border border-stone-200 bg-white p-6">
-          <h2 className="font-semibold text-stone-950">Growing Store</h2>
+          <h2 className="font-semibold text-stone-950">Email Confirmation</h2>
           <p className="mt-3 text-sm leading-6 text-stone-600">
-            The site will grow gradually with better products, clearer policies,
-            checkout options, and customer support.
+            After you submit a request, we send confirmation and follow up by
+            email before any payment step is arranged.
           </p>
         </div>
       </div>

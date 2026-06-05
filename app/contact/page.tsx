@@ -148,6 +148,11 @@ export default function ContactPage() {
                 availability, final cost, shipping, and payment details by
                 email.
               </p>
+              <p className="mt-3 text-sm leading-6 text-stone-600">
+                No payment is required before confirmation. After submitting,
+                you receive an email confirmation and can decide whether to
+                continue.
+              </p>
             </div>
           </div>
 
@@ -302,7 +307,8 @@ export default function ContactPage() {
                   aria-live="polite"
                   className="rounded-2xl bg-green-50 px-4 py-3 text-sm font-semibold leading-6 text-green-700"
                 >
-                  Your order request has been sent. We will reply by email.
+                  Your order request has been sent. We will reply by email with
+                  availability, shipping, final cost, and payment details.
                 </div>
               )}
 
@@ -318,7 +324,8 @@ export default function ContactPage() {
               <p className="text-xs leading-5 text-stone-500">
                 Your request will be saved for reply. If your request cart
                 contains products, the selected items and price reference will
-                also be submitted together.
+                also be submitted together. This request does not require
+                payment before email confirmation.
               </p>
             </div>
           </form>
