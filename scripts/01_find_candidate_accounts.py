@@ -136,7 +136,10 @@ def cell_text(cell: ET.Element, shared_strings: list[str]) -> str:
 def read_xlsx_rows(path: Path) -> list[dict[str, str]]:
     """Read the first worksheet from an xlsx file using only the stdlib."""
     if not path.exists():
-        raise FileNotFoundError(f"Input file not found: {path}")
+        hint = ""
+        if path == INPUT_PATH:
+            hint = " Run scripts/00_find_executive_list.py first to auto-discover data/raw/executive_list.xlsx from a company list."
+        raise FileNotFoundError(f"Input file not found: {path}.{hint}")
 
     with zipfile.ZipFile(path) as zf:
         shared_strings = read_shared_strings(zf)
